@@ -1,0 +1,7 @@
+__pycache__
+keys
+credentials.json
+token.json
+venv
+.env
+/ideas
