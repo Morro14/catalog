@@ -55,8 +55,35 @@ class MyUser(AbstractUser):
     pass
 
 
-class FileTree(models.Model):
-    pass
+# class FileTree(models.Model):
+#     def __str__(self):
+#         return self.default_tree
+
+#     tree = models.JSONField(default=dict(root=''))
+
+#     def add_node(node):
+#         pass
+
+
+class Node(models.Model):
+    parents = models.ForeignKey(
+        to="Node", related_name="parent_node",
+        related_query_name="parent_nodes",
+        on_delete=models.CASCADE
+    )
+
+
+class DataNode(Node):
+    data_entry = models.OneToOneField(to=DataEntry, on_delete=models.CASCADE)
+
+
+class FolderNode(Node):
+    # dev: blank and default are for testing
+    name = models.CharField(max_length=32)
+    children = models.ManyToManyField(
+        to="Node", related_name="children_node",
+        related_query_name="children_nodes"
+    )
 
 
 class CustomUserManager(UserManager):
