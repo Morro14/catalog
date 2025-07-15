@@ -26,7 +26,7 @@ export default function Index() {
 	};
 	const blockContent = getBlockContent(infoTab);
 	return (
-		<div className="flex flex-col justify-center text-center gap-8 w-container-middle">
+		<div className="flex flex-col justify-center text-center gap-8 w-container-index">
 			<h1 className="text-title mt-8 font-semibold">
 				Organize your cloud files in a virtual catalog
 			</h1>

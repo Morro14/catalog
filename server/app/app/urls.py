@@ -34,7 +34,7 @@ router.register(r"data-tags", DataTagViewSet, basename="data-tag")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/", include("allauth.urls")),
     path("test/", test_oauth_view),
     path("api-v1/", include(router.urls)),
+    path("auth/", include("main.urls")),
 ]

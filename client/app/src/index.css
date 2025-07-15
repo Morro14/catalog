@@ -12,10 +12,17 @@ body {
 	font-family: "Source Serif", serif;
 	background-color: #f5f5f5;
 }
-
+#root {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
 @theme {
 	--text-title: 34px;
-	--width-container-middle: 800px;
-	--color-dark-green: #009071;
 	--color-gray-inactive: #5f5f5f;
+	--color-dark-gray-1: #9a9a9a;
+	--width-container-index: 800px;
+	--color-dark-green: #009071;
 }

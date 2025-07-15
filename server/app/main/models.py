@@ -2,6 +2,7 @@ from main.exceptions import RootNodeException
 from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager, Group
+from .managers import CustomUserManager
 
 
 class DataType(models.Model):
@@ -26,8 +27,17 @@ class DataTag(models.Model):
         verbose_name_plural = "tags"
 
 
-class MyUser(AbstractUser):
-    pass
+class User(AbstractUser):
+    def __str__(self):
+        return self.email
+
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255)
+
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = "email"
+    username = None
+    objects = CustomUserManager()
 
 
 # class FileTree(models.Model):
@@ -42,20 +52,20 @@ class MyUser(AbstractUser):
 
 class Node(models.Model):
     def __str__(self):
-        if self.node_type == 'folder':
+        if self.node_type == "folder":
             return self.folder.name
-        elif self.node_type == 'data_entry':
+        elif self.node_type == "data_entry":
             return self.data_entry.title
 
     root = models.BooleanField(default=False)
-    node_type = models.CharField(
-        choices={'folder': 'Folder', 'data_entry': 'Data'})
+    node_type = models.CharField(choices={"folder": "Folder", "data_entry": "Data"})
 
     parent = models.ForeignKey(
-        to="Node", related_name="child_nodes",
+        to="Node",
+        related_name="child_nodes",
         on_delete=models.CASCADE,
         default=None,
-        null=True
+        null=True,
     )
 
     def get_siblings(self):
@@ -77,7 +87,7 @@ class Folder(Node):
         return children
 
     def save(self, *args, **kwargs):
-        self.node_type = 'folder'
+        self.node_type = "folder"
         super(Folder, self).save(*args, **kwargs)
 
 
@@ -96,13 +106,16 @@ class DataEntry(Node):
     file_realid = models.CharField(max_length=64, default="")
     thumbnail = models.CharField(default=None, null=True, max_length=64)
 
-    node = models.OneToOneField(to='Node', parent_link=True,
-                                on_delete=models.CASCADE,
-                                related_name='data_entry',
-                                related_query_name='data_entries')
+    node = models.OneToOneField(
+        to="Node",
+        parent_link=True,
+        on_delete=models.CASCADE,
+        related_name="data_entry",
+        related_query_name="data_entries",
+    )
 
     def save(self, *args, **kwargs):
-        self.node_type = 'data_entry'
+        self.node_type = "data_entry"
         super(DataEntry, self).save(*args, **kwargs)
 
     class Meta:
