@@ -11,8 +11,7 @@ from main.serializers import (
     DataTypeSerializer,
     UserSerializer,
 )
-import jwt, datetime
-import os
+from main.utils.jwt_ import CustomJWT
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,17 +42,11 @@ class LoginView(views.APIView):
         if not user.check_password(password):
             raise exceptions.AuthenticationFailed("Incorrect password.")
 
-        payload = {
-            "id": user.id,
-            "exp": datetime.datetime.now() + datetime.timedelta(minutes=60),
-            "iat": datetime.datetime.now(),
-        }
-
-        token = jwt.encode(
-            payload,
-            os.environ.get("JWT_SECRET"),
-        ).decode("utf-8")
-        return Response({"token": token})
+        token = CustomJWT(content={"id": str(user.id)}).get_token()
+        response = Response()
+        response.set_cookie(key="jwt", value=token, httponly=True)
+        response.data = {"jwt": token}
+        return response
 
 
 class DataEntryViewSet(ModelViewSet):
