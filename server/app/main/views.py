@@ -13,6 +13,8 @@ from main.serializers import (
 )
 from main.utils.jwt_ import CustomJWT
 from dotenv import load_dotenv
+import jwt, os
+
 
 load_dotenv()
 
@@ -32,6 +34,7 @@ class RegisterView(views.APIView):
 
 
 class LoginView(views.APIView):
+    # TODO: check if already logged in
     def post(self, request):
         email = request.data["email"]
         password = request.data["password"]
@@ -46,6 +49,37 @@ class LoginView(views.APIView):
         response = Response()
         response.set_cookie(key="jwt", value=token, httponly=True)
         response.data = {"jwt": token}
+        return response
+
+
+class PasswordChangeView(views.APIView):
+    # TODO
+    pass
+
+
+class UserView(views.APIView):
+    def get(self, request):
+        token = request.COOKIES.get("jwt")
+
+        if not token:
+            raise exceptions.AuthenticationFailed("Unauthenticated!")
+
+        try:
+            payload = jwt.decode(token, os.environ.get("JWT_SECRET"), "HS256")
+        except jwt.ExpiredSignatureError:
+            raise exceptions.AuthenticationFailed("Unauthenticated!")
+
+        user = User.objects.get(id=payload["id"])
+        serializer = UserSerializer(user)
+        print(serializer.data)
+        return Response(serializer.data)
+
+
+class LogoutView(views.APIView):
+    def get(self, request):
+        response = Response()
+        response.delete_cookie("jwt")
+        response.data = {"message": "success"}
         return response
 
 
