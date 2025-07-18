@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http.response import HttpResponse
 from rest_framework.response import Response
 from main.services.google_drive_test import main as get_drive_info
@@ -55,6 +55,17 @@ class LoginView(views.APIView):
 class PasswordChangeView(views.APIView):
     # TODO
     pass
+
+class PasswordRecoveryView(views.APIView):
+    def get(self, request):
+        email = request.data['email']
+        user = User.objects.get(email=email)
+        if not user:
+            return Response({'message': 'User with this email is not found.'})  
+             
+        token = CustomJWT(content=request.data['email'], expires_in=600)
+        
+        return Response({'token': token})
 
 
 class UserView(views.APIView):
