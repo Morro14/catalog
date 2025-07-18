@@ -1,7 +1,8 @@
-import { useState } from "react";
 import Index from "./routes/Index.tsx";
 import Header from "./components/Header.tsx";
 import "./App.css";
+
+const serverURL = ""
 
 function App() {
 	return (
