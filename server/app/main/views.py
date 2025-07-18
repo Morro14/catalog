@@ -48,7 +48,7 @@ class LoginView(views.APIView):
         token = CustomJWT(content={"id": str(user.id)}).get_token()
         response = Response()
         response.set_cookie(key="jwt", value=token, httponly=True)
-        response.data = {"jwt": token}
+        response.data = {"message": "User has successfully logged in."}
         return response
 
 
@@ -56,16 +56,23 @@ class PasswordChangeView(views.APIView):
     # TODO
     pass
 
+
 class PasswordRecoveryView(views.APIView):
-    def get(self, request):
-        email = request.data['email']
+    def post(self, request):
+        email = request.data["email"]
         user = User.objects.get(email=email)
         if not user:
-            return Response({'message': 'User with this email is not found.'})  
-             
-        token = CustomJWT(content=request.data['email'], expires_in=600)
-        
-        return Response({'token': token})
+            return Response({"message": "User with this email is not found."})
+
+        token = CustomJWT(
+            content={"email": request.data["email"]}, expires_in=600
+        ).get_token()
+        response = Response()
+        response.set_cookie(key="token", value=token, httponly=True)
+        response.data = {
+            "message": "Token for password recovery email has been issued."
+        }
+        return response
 
 
 class UserView(views.APIView):
