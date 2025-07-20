@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-AUTH_USER_MODEL = "main.User"
+AUTH_USER_MODEL = "auth_app.User"
 ALLOWED_HOSTS = []
 
 
@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "main",
+    "auth_app",
     "rest_framework",
+    "django_rest_passwordreset",
     "corsheaders",
     # "allauth.socialaccount",
     # "allauth.socialaccount.providers.google",
@@ -70,7 +72,7 @@ ROOT_URLCONF = "app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -141,3 +143,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS headers
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("SMTP_SERVER")
+EMAIL_PORT = os.environ.get("SMTP_PORT")
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = os.environ.get("SMTP_USERNAME")
+EMAIL_HOST_PASSWORD = os.environ.get("SMTP_PASSWORD")
+DEFAULT_FROM_EMAIL = os.environ.get("SMTP_USERNAME")
