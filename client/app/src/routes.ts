@@ -11,6 +11,6 @@ export default [
 		route("catalog", "routes/Catalog.tsx"),
 		route("auth", "routes/Auth.tsx"),
 		route("account", "routes/Account.tsx"),
-		route("password-recover/:jwt", "routes/PassRecover.tsx")
+		route("password-reset/:jwt", "routes/PassReset.tsx"),
 	]),
 ] satisfies RouteConfig;

@@ -5,3 +5,4 @@ token.json
 venv
 .env
 /ideas
+*.log
