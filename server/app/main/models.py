@@ -1,8 +1,5 @@
 from main.exceptions import RootNodeException
-from datetime import datetime
 from django.db import models
-from django.contrib.auth.models import AbstractUser, UserManager, Group
-from .managers import CustomUserManager
 
 
 class DataType(models.Model):
@@ -25,19 +22,6 @@ class DataTag(models.Model):
     class Meta:
         verbose_name = "tag"
         verbose_name_plural = "tags"
-
-
-class User(AbstractUser):
-    def __str__(self):
-        return self.email
-
-    email = models.EmailField(unique=True)
-    # password = models.CharField(max_length=255)
-
-    REQUIRED_FIELDS = []
-    USERNAME_FIELD = "email"
-    username = None
-    objects = CustomUserManager()
 
 
 # class FileTree(models.Model):
@@ -121,15 +105,3 @@ class DataEntry(Node):
     class Meta:
         verbose_name = "Data"
         verbose_name_plural = "Data"
-
-
-class CustomUserManager(UserManager):
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        if email:
-            email = self.normalize_email(email)
-        user = self.model(username=username, **extra_fields)
-        user.password = password
-        user.save()
-        user_group = Group.objects.get_or_create(name="user_group")
-        user.groups.add(user_group)
-        return user
