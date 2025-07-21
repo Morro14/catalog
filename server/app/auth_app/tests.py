@@ -1,11 +1,12 @@
 import requests
-from django.test import TestCase
+from django.test import TestCase as TestCaseDj
 from django.contrib.auth import get_user_model
 from .utils.jwt_ import CustomJWT
 import os
 from dotenv import load_dotenv
 from .loggers import UserLogger
 from django_rest_passwordreset.models import ResetPasswordToken
+from unittest import TestCase
 
 logger = UserLogger("users.log")
 
@@ -15,7 +16,7 @@ USER_MODEL = get_user_model()
 URL_BASE = "http://127.0.0.1:8000/auth/"
 
 
-class AuthTest(TestCase):
+class AuthTest(TestCaseDj):
     def test_register(self):
         r = requests.post(
             "http://127.0.0.1:8000/auth/register",
@@ -39,13 +40,6 @@ class AuthTest(TestCase):
 
 
 class PassResetTest(TestCase):
-    def setUp(self):
-        USER_MODEL.objects.create(email="ivfmn1@gmail.com", password="asdf")
-        user = USER_MODEL.objects.get(email="ivfmn1@gmail.com")
-        ResetPasswordToken.objects.create(
-            user=user,
-            key="667475826261f317ed34a844b0896dc3ab8617d5740793e9d",
-        )
 
     def test_password_reset(self):
         user = USER_MODEL.objects.get(email="ivfmn1@gmail.com")
@@ -56,9 +50,9 @@ class PassResetTest(TestCase):
         print(r.status_code)
 
     def test_password_reset_confirm(self):
-        # r = requests.post(
-        #     URL_BASE + "password-reset/", data={"email": "ivfmn1@gmail.com"}
-        # )
+        r = requests.post(
+            URL_BASE + "password-reset/", data={"email": "ivfmn1@gmail.com"}
+        )
 
         user = USER_MODEL.objects.get(email="ivfmn1@gmail.com")
         tokens = ResetPasswordToken.objects.all()
