@@ -1,0 +1,1 @@
+1) logging in signals is not working 

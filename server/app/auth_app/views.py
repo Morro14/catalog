@@ -41,6 +41,20 @@ class LoginView(views.APIView):
         return response
 
 
+class ProfileView(views.APIView):
+    def get(self, request):
+        token = request.COOKIES.get("jwt")
+        if not token:
+            raise exceptions.AuthenticationFailed("Unauthorized!")
+        try:
+            payload = jwt.decode(token, os.environ.get("JWT_SECRET"), "HS256")
+        except jwt.ExpiredSignatureError:
+            raise exceptions.AuthenticationFailed("Unauthenticated!")
+        user = User.objects.get(id=payload["id"])
+        response = Response({"email": user["email"]})
+        return response
+
+
 class PasswordChangeView(views.APIView):
     # TODO
     pass
@@ -93,7 +107,7 @@ class UserView(views.APIView):
             payload = jwt.decode(token, os.environ.get("JWT_SECRET"), "HS256")
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed("Unauthenticated!")
-
+        # TODO exception user not found
         user = User.objects.get(id=payload["id"])
         serializer = UserSerializer(user)
         print(serializer.data)

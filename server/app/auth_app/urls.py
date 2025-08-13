@@ -1,9 +1,5 @@
 from django.urls import path, include
-from .views import (
-    RegisterView,
-    LoginView,
-    LogoutView,
-)
+from .views import RegisterView, LoginView, LogoutView, ProfileView
 
 
 urlpatterns = [
@@ -15,4 +11,5 @@ urlpatterns = [
     # POST ${API_URL}/confirm/ - using a valid token, the users password is set to the provided password
     # POST ${API_URL}/validate_token/ - will return a 200 if a given token is valid
     path("password-reset/", include("django_rest_passwordreset.urls")),
+    path("profile", ProfileView.as_view()),
 ]

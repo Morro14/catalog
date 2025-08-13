@@ -53,12 +53,12 @@ class PassResetTest(TestCase):
         r = requests.post(
             URL_BASE + "password-reset/", data={"email": "ivfmn1@gmail.com"}
         )
-
         user = USER_MODEL.objects.get(email="ivfmn1@gmail.com")
+        logger.log(f"User {user} is trying to get password reset confirmation.")
         tokens = ResetPasswordToken.objects.all()
         print("token:", tokens[0].key)
 
-        new_password = "10feoM50wnbi"
+        new_password = "p0feoMkedrwnbi"
         r = requests.post(
             URL_BASE + "password-reset/confirm/",
             data={"token": tokens[0].key, "password": new_password},

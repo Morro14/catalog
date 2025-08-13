@@ -1,19 +1,18 @@
-.button-signup {
-	border-radius: 5px;
+.button-login {
 	background: #33a58c;
 	background: linear-gradient(
 		275deg,
 		rgba(51, 165, 140, 0.59) 0%,
 		rgba(51, 165, 140, 1) 50%
 	);
-	width: 176px;
-	height: 35px;
+	width: 150px;
+	height: 30px;
 	color: white;
 	font-weight: 600;
-	font-family: sans-serif;
+	font-family: "Source Serif 4";
 	cursor: pointer;
 }
-.button-signup:hover {
+.button-login:hover {
 	background: #33a58c;
 	background: linear-gradient(
 		275deg,

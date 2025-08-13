@@ -13,6 +13,9 @@ logger = UserLogger("users.log")
 @receiver(reset_password_token_created)
 def send_pwd_reset_email(sender, instance, reset_password_token, *args, **kwargs):
     print("signal")
+    logger.log(
+        "DEBUG", f"User {reset_password_token.user.email} has requested password reset."
+    )
     context = {
         "user": reset_password_token.user,
         "email": reset_password_token.user.email,
@@ -39,8 +42,6 @@ def send_pwd_reset_email(sender, instance, reset_password_token, *args, **kwargs
         # to=[token.user],
         to=[reset_password_token.user.email],
     )
-    logger.log(
-        "DEBUG", f"User {reset_password_token.user.email} has requested password reset."
-    )
+
     msg.attach_alternative(email_html_msg, "text/html")
     # msg.send(fail_silently=False)

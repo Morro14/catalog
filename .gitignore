@@ -6,3 +6,5 @@ venv
 .env
 /ideas
 *.log
+/client_webpack
+/client_v2

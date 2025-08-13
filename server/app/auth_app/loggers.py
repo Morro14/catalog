@@ -1,4 +1,10 @@
 import logging
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+if not os.path.exists(dir_path + "/logs"):
+    os.makedirs(dir_path + "/logs")
 
 
 class UserLogger:
@@ -9,7 +15,7 @@ class UserLogger:
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
 
-        file_handler = logging.FileHandler(log_file, "a", "utf-8")
+        file_handler = logging.FileHandler(dir_path + "/logs/auth.log", "a", "utf-8")
         file_handler.setLevel("DEBUG")
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
@@ -21,5 +27,4 @@ class UserLogger:
         if level == "ERROR":
             self.logger.error(message)
         if level == "DEBUG":
-            print("UserLogger.log", "debug")
             self.logger.debug(message)
