@@ -19,13 +19,16 @@ body {
 
 	--color-gray-1: #a4a4a4;
 	--color-gray-2: #5f5f5f;
+	--color-gray-3: #dbdbdb;
+	--color-gray-4: #ededed;
 	--color-green-dark: #009071;
 	--color-green-medium: rgb(51, 165, 140, 0.59);
+	--color-green-light: rgb(51, 165, 140, 0.12);
 	--width-container-index: 800px;
 	--color-dark-green: #009071;
 	--font-sans: "Source Sans 3", sans-serif;
 	--font-serif: "Source Serif 4", serif;
-	--font-family-mono: "Source Code Pro";
+	--font-mono: "Source Code Pro", sans-serif;
 }
 h1 {
 	@apply text-4xl font-semibold;

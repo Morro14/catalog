@@ -2,11 +2,10 @@ import LeftPannel from "../components/catalog/LeftPannel";
 
 export default function Catalog() {
 	return (
-		<div className="w-full grid grid-cols-2">
-			<div className="col-span-2 bg-amber-300 h-[26px]"></div>
-			<div className="">
-				<LeftPannel></LeftPannel>
-			</div>
+		<div className="w-full flex">
+			<LeftPannel></LeftPannel>
+			<div className="bg-gray-4 h-[26px] grow"></div>
+			<div className="bg-gray-3 h-[26px] grow"></div>
 		</div>
 	);
 }

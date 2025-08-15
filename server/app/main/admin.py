@@ -1,22 +1,28 @@
 from django.contrib import admin
-from main.models import DataEntry, DataTag, DataType
+from .forms import FolderForm, EntryForm
+from main.models import Entry, Tag, Type, Folder
 
 
 # Register your models here.
 
 
-class DataEntryAdmin(admin.ModelAdmin):
+class EntryAdmin(admin.ModelAdmin):
+    form = EntryForm
+
+
+class TypeAdmin(admin.ModelAdmin):
     pass
 
 
-class DataTypeAdmin(admin.ModelAdmin):
+class TagAdmin(admin.ModelAdmin):
     pass
 
 
-class DataTagAdmin(admin.ModelAdmin):
-    pass
+class FolderAdmin(admin.ModelAdmin):
+    form = FolderForm
 
 
-admin.site.register(DataEntry, DataEntryAdmin)
-admin.site.register(DataType, DataTypeAdmin)
-admin.site.register(DataTag, DataTagAdmin)
+admin.site.register(Entry, EntryAdmin)
+admin.site.register(Type, TypeAdmin)
+admin.site.register(Tag, TagAdmin)
+admin.site.register(Folder, FolderAdmin)

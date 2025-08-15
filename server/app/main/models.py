@@ -2,18 +2,18 @@ from main.exceptions import RootNodeException
 from django.db import models
 
 
-class DataType(models.Model):
+class Type(models.Model):
     def __str__(self) -> str:
         return self.name
 
     name = models.CharField(unique=True, max_length=255)
 
     class Meta:
-        verbose_name = "Data type"
-        verbose_name_plural = "Data types"
+        verbose_name = "data type"
+        verbose_name_plural = "data types"
 
 
-class DataTag(models.Model):
+class Tag(models.Model):
     def __str__(self) -> str:
         return self.name
 
@@ -24,30 +24,21 @@ class DataTag(models.Model):
         verbose_name_plural = "tags"
 
 
-# class FileTree(models.Model):
-#     def __str__(self):
-#         return self.default_tree
-
-#     tree = models.JSONField(default=dict(root=''))
-
-#     def add_node(node):
-#         pass
-
-
 class Node(models.Model):
     def __str__(self):
         if self.node_type == "folder":
-            return self.folder.name
-        elif self.node_type == "data_entry":
-            return self.data_entry.title
+            return "folder" + self.folder.name
+        elif self.node_type == "entry":
+            return "entry" + self.entry.name
 
     root = models.BooleanField(default=False)
-    node_type = models.CharField(choices={"folder": "Folder", "data_entry": "Data"})
+    node_type = models.CharField(choices={"folder": "Folder", "entry": "Entry"})
 
     parent = models.ForeignKey(
-        to="Node",
+        to="Folder",
         related_name="child_nodes",
         on_delete=models.CASCADE,
+        blank=True,
         default=None,
         null=True,
     )
@@ -65,25 +56,33 @@ class Folder(Node):
         return self.name
 
     name = models.CharField(max_length=32)
+    node = models.OneToOneField(
+        to="Node",
+        parent_link=True,
+        on_delete=models.CASCADE,
+        related_name="folder",
+        related_query_name="folders",
+    )
 
     def get_children(self):
-        children = Node.objects.filter(parent__pk=self.pk)
-        return children
+        children_folders = Folder.objects.filter(parent__pk=self.pk).order_by("name")
+        children_entries = Entry.objects.filter(parent__pk=self.pk).order_by("name")
+        return children_folders, children_entries
 
     def save(self, *args, **kwargs):
         self.node_type = "folder"
         super(Folder, self).save(*args, **kwargs)
 
 
-class DataEntry(Node):
+class Entry(Node):
     """Model representing data entry of any type"""
 
     def __str__(self) -> str:
         return f"{self.data_type} {self.pk}"
 
-    title = models.CharField(max_length=64, default="")
-    data_type = models.ForeignKey(to="DataType", on_delete=models.CASCADE)
-    tags = models.ManyToManyField(to="DataTag")
+    name = models.CharField(max_length=64, default="")
+    data_type = models.ForeignKey(to="Type", on_delete=models.CASCADE, blank=True)
+    tags = models.ManyToManyField(to="Tag", blank=True)
     context_date = models.DateField(blank=True, null=True)
     context_description = models.TextField(max_length=512, default="")
     create_time = models.DateTimeField(auto_created=True, auto_now=True)
@@ -94,14 +93,14 @@ class DataEntry(Node):
         to="Node",
         parent_link=True,
         on_delete=models.CASCADE,
-        related_name="data_entry",
-        related_query_name="data_entries",
+        related_name="entry",
+        related_query_name="entries",
     )
 
     def save(self, *args, **kwargs):
-        self.node_type = "data_entry"
-        super(DataEntry, self).save(*args, **kwargs)
+        self.node_type = "entry"
+        super(Entry, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Data"
-        verbose_name_plural = "Data"
+        verbose_name = "Entry"
+        verbose_name_plural = "Entries"

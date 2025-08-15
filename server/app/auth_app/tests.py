@@ -8,6 +8,7 @@ from .loggers import UserLogger
 from django_rest_passwordreset.models import ResetPasswordToken
 from unittest import TestCase
 
+
 logger = UserLogger("users.log")
 
 load_dotenv()

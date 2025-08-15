@@ -1,20 +1,20 @@
-from main.models import DataEntry, DataTag, DataType
+from main.models import Entry, Tag, Type
 from rest_framework import serializers
 
 
-class DataEntrySerializer(serializers.ModelSerializer):
+class EntrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = DataEntry
+        model = Entry
         fields = "__all__"
 
 
-class DataTagSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DataTag
+        model = Tag
         fields = "__all__"
 
 
-class DataTypeSerializer(serializers.ModelSerializer):
+class TypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DataType
+        model = Type
         fields = "__all__"
