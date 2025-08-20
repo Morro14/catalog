@@ -1,20 +1,5 @@
-import axios from "axios";
 import { useState } from "react";
-import { serverURL } from "../../App";
-
-const TREE_URL = serverURL + "api-v1/catalog/tree";
-
-export async function clientLoader() {
-	const res = await axios.get(TREE_URL).then((r) => {
-		console.log(r);
-		return r;
-	});
-	return res;
-}
-
-export function HydrateFallback() {
-	return <>Loading...</>;
-}
+import FileTree from "./FileTree";
 
 export default function LeftPannel({ loaderData }: any) {
 	const [blockVisible, setBlockVisible] = useState({
@@ -39,7 +24,7 @@ export default function LeftPannel({ loaderData }: any) {
 			<div>
 				<div
 					id="menu"
-					className="font-sans text-base bg-gray-3 h-[26px] pl-2"
+					className="font-sans text-base bg-gray-3 h-[26px] pl-2 cursor-pointer"
 					onClick={handleClick}
 				>
 					My Catalog
@@ -51,13 +36,13 @@ export default function LeftPannel({ loaderData }: any) {
 			<div>
 				<div
 					id="files"
-					className="font-sans text-base bg-gray-3 h-[26px] pl-2"
+					className="font-sans text-base bg-gray-3 h-[26px] pl-2 cursor-pointer"
 					onClick={handleClick}
 				>
 					Files
 				</div>
 				<div className={blockVisible.files ? visibleStyle : hiddenStyle}>
-					files
+					<FileTree loaderData={loaderData} />
 				</div>
 			</div>
 		</div>

@@ -21,9 +21,11 @@
 		"noUnusedParameters": true,
 		"erasableSyntaxOnly": true,
 		"noFallthroughCasesInSwitch": true,
-		"noUncheckedSideEffectImports": true
+		"noUncheckedSideEffectImports": true,
+		"rootDirs": [".", "./.react-router/types"]
 	},
 	"include": [
+		".react-router/types/**/*",
 		"src",
 		"app/routes.ts",
 		"app/root.tsx",
