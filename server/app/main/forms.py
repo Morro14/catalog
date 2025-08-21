@@ -5,7 +5,7 @@ from django import forms
 class FolderForm(forms.ModelForm):
     class Meta:
         model = Folder
-        fields = ["name", "root", "parent"]
+        fields = ["name", "user", "root", "parent"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

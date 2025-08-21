@@ -115,8 +115,8 @@ class UserView(views.APIView):
 
 
 class LogoutView(views.APIView):
-    def get(self):
+    def get(self, response):
         response = Response()
         response.delete_cookie("jwt")
-        response.data = {"message": "success"}
+        response.data = {"message": "User has successfuly logged out."}
         return response

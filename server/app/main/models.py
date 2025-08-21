@@ -1,5 +1,9 @@
 from main.exceptions import RootNodeException
 from django.db import models
+from django.contrib.auth import get_user_model
+
+
+USER = get_user_model()
 
 
 class Type(models.Model):
@@ -33,6 +37,7 @@ class Node(models.Model):
 
     root = models.BooleanField(default=False)
     node_type = models.CharField(choices={"folder": "Folder", "entry": "Entry"})
+    user = models.ForeignKey(to=USER, on_delete=models.CASCADE)
 
     parent = models.ForeignKey(
         to="Folder",

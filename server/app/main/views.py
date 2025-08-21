@@ -25,6 +25,22 @@ USER_MODEL = get_user_model()
 #     return HttpResponse()
 
 
+def jwt_auth(token):
+    if not token:
+        raise exceptions.AuthenticationFailed("Unauthenticated!")
+
+    try:
+        payload = jwt.decode(token, os.environ.get("JWT_SECRET"), "HS256")
+    except jwt.ExpiredSignatureError:
+        raise exceptions.AuthenticationFailed("Unauthenticated!")
+
+    try:
+        user = USER_MODEL.objects.get(id=payload["id"])
+    except USER_MODEL.DoesNotExist:
+        raise exceptions.NotFound
+    return user
+
+
 class UserView(views.APIView):
     def get(self, request):
         token = request.COOKIES.get("jwt")
@@ -50,7 +66,7 @@ class EntryViewSet(ModelViewSet):
 
 class TypeViewSet(ModelViewSet):
     queryset = Type.objects.all()
-    serializer_class = Type
+    serializer_class = TypeSerializer
 
 
 class TagViewSet(ModelViewSet):
@@ -60,8 +76,10 @@ class TagViewSet(ModelViewSet):
 
 class TreeView(views.APIView):
     def get(self, request):
+        user = jwt_auth(request.COOKIES.get("jwt"))
+
         tree = {"root": []}
-        root = Folder.objects.filter(root=True).first()
+        root = Folder.objects.filter(root=True, user=user).first()
         print(root)
         if not root:
             return Response(
