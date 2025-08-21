@@ -25,6 +25,7 @@ export default function Login() {
 			axios.post(loginURL, { email: email, password: password }).then((r) => {
 				console.log(r, document.cookie);
 				if (r.status === 200) {
+					localStorage.setItem("username", email);
 					nav("/catalog");
 				} else {
 					setErrors({
@@ -35,10 +36,10 @@ export default function Login() {
 			});
 		} else {
 			if (!emailValid) {
-				setErrors({ ...errors, email: "Please, enter a correct email." });
+				setErrors({ ...errors, email: "Please enter correct email." });
 			}
 			if (!passwordValid) {
-				setErrors({ ...errors, password: "Please, enter a correct password." });
+				setErrors({ ...errors, password: "Please enter correct password." });
 			}
 		}
 	};
@@ -54,7 +55,7 @@ export default function Login() {
 	return (
 		<div>
 			<Form
-				className="flex flex-col items-center gap-5 mt-2.5"
+				className="flex flex-col items-center gap-2.5 mt-2.5"
 				onSubmit={handleSubmit}
 				navigate={false}
 			>

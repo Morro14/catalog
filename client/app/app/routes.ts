@@ -7,10 +7,9 @@ import {
 
 export default [
 	layout("routes/Main.tsx", [
-		layout("routes/Index.tsx", [
-			index("routes/Login.tsx"),
-			route("signup", "routes/Signup.tsx"),
-		]),
+		index("routes/Index.tsx"),
+		route("signup", "routes/Signup.tsx"),
+
 		route("catalog", "routes/Catalog.tsx"),
 		route("auth", "routes/Auth.tsx"),
 		route("account", "routes/Account.tsx"),

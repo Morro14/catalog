@@ -1,16 +1,30 @@
 import "../styles/buttons.css";
 import Auth from "../components/Auth";
 import Header from "../components/Header";
-export default function Index() {
+import type { Route } from "./+types/Index";
+import { useState } from "react";
+
+export async function clientLoader() {
+	const username = localStorage.getItem("username");
+	return username;
+}
+
+export default function Index({ loaderData }: Route.ComponentProps) {
+	console.log("loaderData index", loaderData);
+	const username = loaderData;
+	const [auth, setAuth] = useState(username ? true : false);
 	return (
 		<div>
-			<Header></Header>
+			<Header
+				params={{ username: username, auth: auth, setAuth: setAuth }}
+			></Header>
 			<div className="flex justify-center text-left w-full">
 				<div className="gr-gray-line-v w-[1px] h-dvh mt-[117px]"></div>
 				<div className="grid grid-cols-[862px_auto] gap-4 w-[1284px] ">
 					<div className="">
+						<div className="h-2 gr-green-medium opacity-35"></div>
 						<div className="">
-							<h1 className="font-semibold mt-8 px-9">
+							<h1 className="font-semibold mt-7 px-9">
 								Organize your cloud files in a virtual catalog
 							</h1>
 						</div>
@@ -33,7 +47,6 @@ export default function Index() {
 							className="mt-12"
 						>
 							<div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div>
-							<div className="h-2 gr-green-medium opacity-35"></div>
 						</div>
 						<div className="grid grid-rows-subgrid mt-8 px-9">
 							<h3>What this app is for</h3>
@@ -47,7 +60,7 @@ export default function Index() {
 							aria-hidden="true"
 							className="mt-12"
 						>
-							<div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div>
+							{/* <div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div> */}
 						</div>
 						<div className="mt-8 px-9">
 							<h3>How it works</h3>
@@ -66,7 +79,7 @@ export default function Index() {
 							aria-hidden="true"
 							className="mt-12"
 						>
-							<div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div>
+							{/* <div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div> */}
 						</div>
 						<div className="mt-8 px-9">
 							<h3>Preview</h3>
@@ -76,7 +89,7 @@ export default function Index() {
 							aria-hidden="true"
 							className="mt-12"
 						>
-							<div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div>
+							{/* <div className="h-[1px] gr-gray-line w-[calc(105%+2.25rem)] relative left-[calc(-5%-2.25rem)]"></div> */}
 						</div>
 						<div className="mt-8 px-9">
 							<h3>Github</h3>
@@ -84,7 +97,9 @@ export default function Index() {
 						</div>
 					</div>
 					<div className="col-auto">
-						<Auth></Auth>
+						<Auth
+							params={{ auth: auth, username: username, setAuth: setAuth }}
+						></Auth>
 					</div>
 				</div>
 			</div>
