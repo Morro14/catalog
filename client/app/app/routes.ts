@@ -11,7 +11,7 @@ export default [
 		route("signup", "routes/Signup.tsx"),
 
 		route("catalog", "routes/Catalog.tsx"),
-		route("auth", "routes/Auth.tsx"),
+
 		route("account", "routes/Account.tsx"),
 		route("password-reset", "routes/PassReset.tsx"),
 	]),

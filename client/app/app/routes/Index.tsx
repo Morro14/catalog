@@ -22,7 +22,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 				<div className="gr-gray-line-v w-[1px] h-dvh mt-[117px]"></div>
 				<div className="grid grid-cols-[862px_auto] gap-4 w-[1284px] ">
 					<div className="">
-						<div className="h-2 gr-green-medium opacity-35"></div>
+						{/* <div className="h-2 gr-green-medium opacity-35"></div> */}
 						<div className="">
 							<h1 className="font-semibold mt-7 px-9">
 								Organize your cloud files in a virtual catalog

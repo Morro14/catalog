@@ -8,7 +8,15 @@ export const axiosInstance = axios.create({
 	baseURL: serverURL,
 	timeout: 10000,
 });
-
+axios.interceptors.response.use((r) => {
+	console.log("interseptor");
+	const authExceptionsStatuses = [401, 403];
+	if (authExceptionsStatuses.includes(r.status)) {
+		console.log(r);
+		localStorage.removeItem("username");
+	}
+	return r;
+});
 export default function App() {
 	return (
 		<>
