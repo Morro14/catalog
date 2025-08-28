@@ -1,5 +1,4 @@
 from rest_framework.response import Response
-from main.services.google_drive_test import main as get_drive_info
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import views, exceptions
 from main.models import Entry, Type, Tag, Folder
@@ -12,20 +11,40 @@ from auth_app.serializers import UserSerializer
 from dotenv import load_dotenv
 import jwt, os
 from django.contrib.auth import get_user_model
-
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from django.conf import settings
+from .services.google.credentials import get_driver_service
 
 load_dotenv()
 
 USER_MODEL = get_user_model()
 
 
-# test view for Google Drive
-# def test_oauth_view(request):
-#     get_drive_info()
-#     return HttpResponse()
+class GoogleDriveFiles(views.APIView):
+    def get(self, request):
+        user = jwt_auth(request.COOKIES.get("jwt"))
+        access_token = user.access_token
+        if not access_token:
+            return Response({"error": "No Google account linked", "status": 400})
+        try:
+            service = get_driver_service(user)
+
+            results = (
+                service.files()
+                .list(
+                    page_size=10,
+                )
+                .execute()
+            )
+            files = results.get("files", [])
+            return Response({"files": files})
+        except Exception as e:
+            return Response({"error": str(e), "status": 500})
 
 
 def jwt_auth(token):
+    """Tries to authenticate user with id decoded from JWT token and returns the user object"""
     if not token:
         raise exceptions.AuthenticationFailed("Unauthenticated!")
 
@@ -39,24 +58,6 @@ def jwt_auth(token):
     except USER_MODEL.DoesNotExist:
         raise exceptions.NotFound
     return user
-
-
-class UserView(views.APIView):
-    def get(self, request):
-        token = request.COOKIES.get("jwt")
-
-        if not token:
-            raise exceptions.AuthenticationFailed("Unauthenticated!")
-
-        try:
-            payload = jwt.decode(token, os.environ.get("JWT_SECRET"), "HS256")
-        except jwt.ExpiredSignatureError:
-            raise exceptions.AuthenticationFailed("Unauthenticated!")
-
-        user = USER_MODEL.objects.get(id=payload["id"])
-        serializer = UserSerializer(user)
-        print(serializer.data)
-        return Response(serializer.data)
 
 
 class EntryViewSet(ModelViewSet):
@@ -77,14 +78,13 @@ class TagViewSet(ModelViewSet):
 class TreeView(views.APIView):
     def get(self, request):
         user = jwt_auth(request.COOKIES.get("jwt"))
-
+        print("tree view user", user)
         tree = {"root": []}
         root = Folder.objects.filter(root=True, user=user).first()
-        print(root)
+        print("tree view root", root)
         if not root:
-            return Response(
-                data={"message": "File tree has not been found"}, status=404
-            )
+            Folder.objects.create(root=True, name=f"root_{user.id}", user=user)
+            return Response(data={"tree": tree})
 
         def get_row(parent):
             children_folders, children_entries = parent.get_children()

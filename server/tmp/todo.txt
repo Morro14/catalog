@@ -1,1 +1,1 @@
-1) logging in signals is not working 
+1. Synchronize oauth refresh token and JWT token
