@@ -9,11 +9,9 @@ export default [
 	layout("routes/Main.tsx", [
 		index("routes/Index.tsx"),
 		route("signup", "routes/Signup.tsx"),
-
 		route("catalog", "routes/Catalog.tsx"),
-
 		route("account", "routes/Account.tsx"),
 		route("password-reset", "routes/PassReset.tsx"),
+		route("oauth-success", "routes/OauthSuccess.tsx"),
 	]),
 ] satisfies RouteConfig;
-// export default [index("routes/TestRoute.tsx")] satisfies RouteConfig;

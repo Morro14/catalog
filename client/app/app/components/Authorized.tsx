@@ -19,7 +19,7 @@ export default function Authorized({ username, auth, setAuth }: any) {
 			</div>
 			<div className="flex flex-col relative top-[50px] gap-2">
 				<Link
-					to="catalog"
+					to="/catalog"
 					className="button-login text-center"
 				>
 					Open catalog

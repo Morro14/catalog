@@ -3,15 +3,27 @@ import Auth from "../components/Auth";
 import Header from "../components/Header";
 import type { Route } from "./+types/Index";
 import { useState } from "react";
+import { axiosInstance } from "../App";
+
+const PROFILE_URL = "auth/profile";
 
 export async function clientLoader() {
-	const username = localStorage.getItem("username");
-	return username;
+	const userInfo = axiosInstance
+		.get(PROFILE_URL, { withCredentials: true })
+		.then((r) => {
+			console.log(r);
+
+			return r;
+		})
+		.catch((r) => {
+			console.log("user is not authorized", r);
+		});
+	return userInfo;
 }
 
-export default function Index({ loaderData }: Route.ComponentProps) {
-	console.log("loaderData index", loaderData);
-	const username = loaderData;
+export default function Index({ loaderData }: any) {
+	const username = loaderData ? loaderData.data.email : null;
+	console.log(loaderData);
 	const [auth, setAuth] = useState(username ? true : false);
 	return (
 		<div>

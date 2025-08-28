@@ -8,3 +8,4 @@ venv
 *.log
 /client_webpack
 /client_v2
+.react-router

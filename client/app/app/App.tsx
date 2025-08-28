@@ -15,6 +15,7 @@ axios.interceptors.response.use((r) => {
 		console.log(r);
 		localStorage.removeItem("username");
 	}
+	console.log("response", r);
 	return r;
 });
 export default function App() {

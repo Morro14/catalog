@@ -4,6 +4,7 @@ import axios from "axios";
 import { serverURL } from "../App";
 import { useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router";
+import startGoogleAuthFlow from "../utils/google/authflow";
 
 const loginURL = serverURL + "/auth/login";
 
@@ -52,6 +53,7 @@ export default function Login() {
 			setPassword(value);
 		}
 	};
+
 	return (
 		<div>
 			<Form
@@ -94,7 +96,7 @@ export default function Login() {
 			</Form>
 			<div className="mt-3 text-center">or log in via:</div>
 			<div className="flex gap-7 justify-center mt-3">
-				<div>Google</div>
+				<div onClick={startGoogleAuthFlow}>Google</div>
 				<div>Yandex</div>
 				<div>Microsoft</div>
 			</div>
