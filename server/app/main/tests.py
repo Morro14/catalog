@@ -1,5 +1,9 @@
 from django.test import TestCase as TestCaseDj
 from .models import Node, Folder, Entry, Type, Tag
+from django.contrib.auth import get_user_model
+
+
+USER = get_user_model()
 
 
 class TreeTest(TestCaseDj):
@@ -37,3 +41,24 @@ class TreeTest(TestCaseDj):
 
         tree["root"] = get_row(root)
         print(tree)
+
+
+class FolderUniqueNameTest(TestCaseDj):
+    def setUp(self):
+
+        user = USER.objects.create(email="test@email.com", password="1234dofwe")
+        root = Folder.objects.create(root=True, name="root", user=user)
+        folder_1 = Folder.objects.create(name="Folder 1", parent=root, user=user)
+        type_1 = Type.objects.create(name="Type 1")
+        Entry.objects.create(name="Entry 1", parent=root, data_type=type_1, user=user)
+        Entry.objects.create(
+            name="Entry 2", parent=folder_1, data_type=type_1, user=user
+        )
+
+    def test_unique_name(self):
+        user = USER.objects.get(email="test@email.com")
+        root = Folder.objects.filter(root=True).first()
+        entry = Entry.objects.get(name="Entry 1")
+        # folder1 = Folder.objects.get(name="Folder 1")
+        type_1 = Type.objects.get(name="Type 1")
+        Entry.objects.create(name="Entry 2", parent=root, data_type=type_1, user=user)

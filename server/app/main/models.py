@@ -1,4 +1,4 @@
-from main.exceptions import RootNodeException
+from main.exceptions import RootNodeException, NameDublicateException
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -48,12 +48,18 @@ class Node(models.Model):
         null=True,
     )
 
+    def get_name(self):
+        node = self
+        if self.node_type == "folder":
+            return node.folder.name
+        return node.entry.name
+
     def get_siblings(self):
-        if not self.root:
-            siblings = self.parent.child_nodes.exclude(pk=self.pk)
-            return siblings
-        else:
-            raise RootNodeException
+        if self.root:
+            raise RootNodeException()
+
+        siblings = self.parent.child_nodes.exclude(pk=self.pk)
+        return siblings
 
 
 class Folder(Node):
@@ -76,6 +82,11 @@ class Folder(Node):
 
     def save(self, *args, **kwargs):
         self.node_type = "folder"
+        if not self.root:
+            siblings = self.get_siblings()
+            for s in siblings:
+                if s.get_name() == self.name:
+                    raise NameDublicateException
         super(Folder, self).save(*args, **kwargs)
 
 
@@ -104,6 +115,13 @@ class Entry(Node):
 
     def save(self, *args, **kwargs):
         self.node_type = "entry"
+
+        siblings = self.get_siblings()
+        for s in siblings:
+            print("sibling", type(s), s.node_type)
+            if s.get_name() == self.name:
+                raise NameDublicateException
+
         super(Entry, self).save(*args, **kwargs)
 
     class Meta:

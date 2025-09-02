@@ -38,6 +38,7 @@ class GoogleDriveFiles(views.APIView):
                 .execute()
             )
             files = results.get("files", [])
+            print("google drive api: files:", files)
             return Response({"files": files})
         except Exception as e:
             return Response({"error": str(e), "status": 500})
@@ -63,6 +64,11 @@ def jwt_auth(token):
 class EntryViewSet(ModelViewSet):
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
+
+
+class EntryView(views.APIView):
+    def get(request):
+        user = jwt_auth(request.COOKIES.get("jwt"))
 
 
 class TypeViewSet(ModelViewSet):
