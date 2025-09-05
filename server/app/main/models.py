@@ -11,6 +11,7 @@ class Type(models.Model):
         return self.name
 
     name = models.CharField(unique=True, max_length=255)
+    user = models.ForeignKey(to=USER, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "data type"
@@ -22,6 +23,7 @@ class Tag(models.Model):
         return self.name
 
     name = models.CharField(unique=True, max_length=255)
+    user = models.ForeignKey(to=USER, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "tag"
@@ -118,7 +120,6 @@ class Entry(Node):
 
         siblings = self.get_siblings()
         for s in siblings:
-            print("sibling", type(s), s.node_type)
             if s.get_name() == self.name:
                 raise NameDublicateException
 
