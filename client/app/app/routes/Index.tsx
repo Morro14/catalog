@@ -23,7 +23,6 @@ export async function clientLoader() {
 
 export default function Index({ loaderData }: any) {
 	const username = loaderData ? loaderData.data.email : null;
-	console.log(loaderData);
 	const [auth, setAuth] = useState(username ? true : false);
 	return (
 		<div>

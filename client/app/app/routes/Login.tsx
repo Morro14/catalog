@@ -17,24 +17,34 @@ export default function Login() {
 		password: boolean | string;
 	}>({ email: false, password: false });
 
-	const handleSubmit = () => {
+	const handleSubmit = (e: React.SyntheticEvent) => {
+		e.preventDefault();
 		console.log("submitting");
 		const emailValid = v.validateEmail(email);
 		const passwordValid = v.validatePassword(password);
 		console.log("valid data; password", passwordValid, "email:", emailValid);
 		if (emailValid && passwordValid) {
-			axios.post(loginURL, { email: email, password: password }).then((r) => {
-				console.log(r, document.cookie);
-				if (r.status === 200) {
-					localStorage.setItem("username", email);
-					nav("/catalog");
-				} else {
+			axios
+				.post(loginURL, { email: email, password: password })
+				.then((r) => {
+					console.log("login:", r.status);
+					if (r.status === 200) {
+						localStorage.setItem("username", email);
+						nav("/catalog");
+					} else {
+						setErrors({
+							email: "Incorrect user data.",
+							password: "Incorrect user data.",
+						});
+					}
+				})
+				.catch((r) => {
+					console.log("login: caught", r);
 					setErrors({
 						email: "Incorrect user data.",
 						password: "Incorrect user data.",
 					});
-				}
-			});
+				});
 		} else {
 			if (!emailValid) {
 				setErrors({ ...errors, email: "Please enter correct email." });
@@ -44,6 +54,7 @@ export default function Login() {
 			}
 		}
 	};
+
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		e.preventDefault();
 		const { name, value } = e.target;
@@ -89,7 +100,7 @@ export default function Login() {
 				</div>
 				<button
 					className="button-login mt-3"
-					type="submit"
+					// type="submit"
 				>
 					Sign In
 				</button>
