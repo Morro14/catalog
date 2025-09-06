@@ -1,6 +1,7 @@
 from django.test import TestCase as TestCaseDj
 from .models import Node, Folder, Entry, Type, Tag
 from django.contrib.auth import get_user_model
+from exceptions import NameDublicateException
 
 
 USER = get_user_model()
@@ -79,7 +80,6 @@ def gen_random_datetime(start: datetime, end: datetime):
 
 
 class PopulateDataTest(TestCaseDj):
-
     def test_populate(self):
         depth = 5
         num_users = 2
@@ -145,6 +145,7 @@ class PopulateDataTest(TestCaseDj):
                     )
 
             gen_row_folders()
+
             folders = Folder.objects.filter(user=user)
             print("folders:", len(folders), folders)
 

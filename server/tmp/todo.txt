@@ -1,2 +1,1 @@
 1. Synchronize oauth refresh token and JWT token
-2. Add user field to tags and types

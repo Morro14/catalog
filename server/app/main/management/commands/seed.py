@@ -36,6 +36,12 @@ class Command(BaseCommand):
         num_folders = options["folders"]
         num_entries = options["entries"]
 
+        Type.objects.all().delete()
+        Tag.objects.all().delete()
+        Folder.objects.all().delete()
+        Entry.objects.all().delete()
+        USER.objects.exclude(is_superuser=True).delete()
+
         tree = ""
         Type.objects.all().delete()
         Tag.objects.all().delete()
@@ -45,7 +51,7 @@ class Command(BaseCommand):
         for _ in range(0, num_users):
             num_entries_user = num_entries
             num_folder_user = num_folders
-            user = USER.objects.create(email=fake.email(), password="password123")
+            user = USER.objects.create_user(email=fake.email(), password="password123")
             root = Folder.objects.create(root=True, user=user, name="root")
             types = [
                 Type.objects.create(name=fake.word(), user=user) for _ in range(0, 3)

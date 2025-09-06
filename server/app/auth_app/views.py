@@ -29,15 +29,19 @@ class RegisterView(views.APIView):
 class LoginView(views.APIView):
     # TODO: check if already logged in
     def post(self, request):
+
         email = request.data["email"]
         password = request.data["password"]
-
+        print("login view: email:", email, "password:", password)
         user = User.objects.filter(email=email).first()
+        print("users pass:", user.password)
         if not User:
+            print("user not found")
             raise exceptions.AuthenticationFailed("User not found.")
         if not user.check_password(password):
+            print("incorrect password")
             raise exceptions.AuthenticationFailed("Incorrect password.")
-
+        print("login view: user authenticated")
         token = CustomJWT(content={"id": str(user.id)}).get_token()
         response = Response()
         response.set_cookie(
