@@ -1,13 +1,16 @@
 from django.test import TestCase as TestCaseDj
+from rest_framework.test import APIClient, APITestCase
 from .models import Node, Folder, Entry, Type, Tag
 from django.contrib.auth import get_user_model
-from exceptions import NameDublicateException
+from .exceptions import NameDublicateException
+from auth_app.utils.jwt_ import CustomJWTTest
+import json
 
 
 USER = get_user_model()
 
 
-class TreeTest(TestCaseDj):
+class TreeTest(APITestCase):
     def setUp(self):
         root = Folder.objects.create(root=True, name="root")
         folder_1 = Folder.objects.create(name="Folder 1", parent=root)
@@ -69,6 +72,7 @@ import random
 from faker import Faker
 from datetime import datetime, timedelta
 import requests
+import os
 
 fake = Faker()
 
@@ -80,11 +84,12 @@ def gen_random_datetime(start: datetime, end: datetime):
 
 
 class PopulateDataTest(TestCaseDj):
-    def test_populate(self):
+    def setUp(self):
+        self.client = APIClient()
         depth = 5
         num_users = 2
-        num_folders = 90
-        num_entries = 90
+        num_folders = 9
+        num_entries = 19
 
         tree = ""
         Type.objects.all().delete()
@@ -96,6 +101,7 @@ class PopulateDataTest(TestCaseDj):
             num_entries_user = num_entries
             num_folder_user = num_folders
             user = USER.objects.create(email=fake.email(), password="password123")
+
             root = Folder.objects.create(root=True, user=user, name="root")
             types = [
                 Type.objects.create(name=fake.word(), user=user) for _ in range(0, 3)
@@ -116,9 +122,15 @@ class PopulateDataTest(TestCaseDj):
                 if level == 0 or num_folder_user < 1:
                     return
                 if max_depth_path:
-                    max_depth_folder = Folder.objects.create(
-                        user=user, parent=parent, name=fake.word()
-                    )
+                    success = False
+                    while not success:
+                        try:
+                            max_depth_folder = Folder.objects.create(
+                                user=user, parent=parent, name=fake.word()
+                            )
+                            success = True
+                        except NameDublicateException:
+                            continue
                     num_folder_user -= 1
                     gen_row_folders(
                         level=level - 1,
@@ -134,9 +146,15 @@ class PopulateDataTest(TestCaseDj):
                     num_folder_row = 1
 
                 for _ in range(num_folder_row):
-                    folder = Folder.objects.create(
-                        user=user, parent=parent, name=fake.word()
-                    )
+                    success = False
+                    while not success:
+                        try:
+                            folder = Folder.objects.create(
+                                user=user, parent=parent, name=fake.word()
+                            )
+                            success = True
+                        except NameDublicateException:
+                            continue
                     num_folder_user -= 1
                     gen_row_folders(
                         level=level - 1,
@@ -147,22 +165,27 @@ class PopulateDataTest(TestCaseDj):
             gen_row_folders()
 
             folders = Folder.objects.filter(user=user)
-            print("folders:", len(folders), folders)
+            # print("folders:", len(folders), folders)
 
             def gen_entry(parent):
 
                 tags_selected = random.choices(population=tags, k=random.randrange(2))
-
-                entry = Entry.objects.create(
-                    user=user,
-                    name=fake.word(),
-                    data_type=random.choice(types),
-                    context_description=fake.text(max_nb_chars=256),
-                    context_date=gen_random_datetime(
-                        start=datetime(1900, 1, 1), end=datetime(2025, 1, 1)
-                    ),
-                    parent=parent,
-                )
+                success = False
+                while not success:
+                    try:
+                        entry = Entry.objects.create(
+                            user=user,
+                            name=fake.word(),
+                            data_type=random.choice(types),
+                            context_description=fake.text(max_nb_chars=256),
+                            context_date=gen_random_datetime(
+                                start=datetime(1900, 1, 1), end=datetime(2025, 1, 1)
+                            ),
+                            parent=parent,
+                        )
+                        success = True
+                    except NameDublicateException:
+                        continue
                 entry.tags.set(tags_selected)
 
             while num_entries_user > 0:
@@ -172,7 +195,7 @@ class PopulateDataTest(TestCaseDj):
 
             # log tree
             entries_ = Entry.objects.filter(user=user)
-            print("entries:", len(entries_), entries_)
+            # print("entries:", len(entries_), entries_)
 
             # print("tree before walking", tree)
             def walk_tree(dir, indent):
@@ -192,7 +215,32 @@ class PopulateDataTest(TestCaseDj):
                     tree += (indent + 1) * "| " + "e: " + entry.name + "\n"
 
             walk_tree(root, 0)
-        print(tree)
+        # print(tree)
+
+    def test_filter(self):
+        users = USER.objects.all()
+        user = users[1]
+        tags = Tag.objects.filter(user=user)
+
+        tags_filter = tags[0:2]
+        print("filter by tags:", tags_filter)
+        user_token = CustomJWTTest(
+            content={"id": str(user.id)},
+        ).get_token()
+        # print("token", user_token)
+        self.client.cookies["jwt"] = user_token
+        response_1 = self.client.get(
+            path=f"http://127.0.0.1:8000/api-v1/catalog/entries/?tags={tags_filter[0].name}&tags={tags_filter[1].name}",
+        )
+        # response_2 = self.client.get(
+        #     path=f"http://127.0.0.1:8000/api-v1/catalog/entries/?tags={tags_filter[0].name}",
+        # )
+        tags, types = [entry["tags"] for entry in response_1.json()], [
+            entry["data_type"] for entry in response_1.json()
+        ]
+        print("tags:", tags)
+        print("types:", types)
+        # print("response:", response_2.json())
 
 
 class EntryTest(TestCaseDj):
@@ -204,3 +252,8 @@ class EntryTest(TestCaseDj):
         entry = Entry.objects.create(user=user, data_type=types[0], parent=root)
         entry.tags.set(tags)
         print("entry tags:", entry.tags.all())
+
+
+# class EntryFilterTest(TestCaseDj):
+#     def test_filter(self):
+#         user = USER.objects.create(email="test@email.com", password="password123")

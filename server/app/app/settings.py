@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_rest_passwordreset",
     "corsheaders",
+    "django_filters",
+    "django_extensions",
     # "allauth.socialaccount",
     # "allauth.socialaccount.providers.google",
 ]
@@ -66,7 +68,13 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
-
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKEND": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "main.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+}
 ROOT_URLCONF = "app.urls"
 
 TEMPLATES = [

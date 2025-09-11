@@ -1,20 +1,20 @@
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import views, exceptions
+from rest_framework import views, exceptions, generics, filters
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from main.models import Entry, Type, Tag, Folder
 from main.serializers import (
     EntrySerializer,
     TagSerializer,
     TypeSerializer,
 )
-from auth_app.serializers import UserSerializer
 from dotenv import load_dotenv
 import jwt, os
 from django.contrib.auth import get_user_model
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-from django.conf import settings
 from .services.google.credentials import get_driver_service
+from django.shortcuts import get_object_or_404, get_list_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import EntryFilter
 
 load_dotenv()
 
@@ -61,14 +61,33 @@ def jwt_auth(token):
     return user
 
 
-class EntryViewSet(ModelViewSet):
-    queryset = Entry.objects.all()
-    serializer_class = EntrySerializer
-
-
 class EntryView(views.APIView):
-    def get(request):
-        user = jwt_auth(request.COOKIES.get("jwt"))
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        user = self.request.user
+        entry = get_object_or_404(model=Entry, pk=pk, user=user)
+        if not entry:
+            raise exceptions.NotFound("Entry has not been found")
+        serializer = EntrySerializer(entry)
+        return Response(serializer.data)
+
+
+class EntryListView(generics.ListAPIView):
+    serializer_class = EntrySerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = EntryFilter
+    ordering_fields = ["created_at", "name"]
+
+    def get_queryset(self):
+        print("get queryset", self.request.user)
+        queryset = (
+            Entry.objects.filter(user=self.request.user)
+            .select_related("data_type")
+            .prefetch_related("tags")
+            .distinct()
+        )
+        return queryset
 
 
 class TypeViewSet(ModelViewSet):

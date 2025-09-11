@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework import views, exceptions
+from rest_framework.permissions import AllowAny
 from .models import User
 from .serializers import UserSerializer
 from django.conf import settings
@@ -27,7 +28,9 @@ class RegisterView(views.APIView):
 
 
 class LoginView(views.APIView):
-    # TODO: check if already logged in
+    # TODO: check if already logged in and multiple devices login
+    permission_classes = [AllowAny]
+
     def post(self, request):
 
         email = request.data["email"]
