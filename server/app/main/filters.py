@@ -5,7 +5,9 @@ from django.db.models import Count, Q
 
 class EntryFilter(django_filters.FilterSet):
     tags = django_filters.CharFilter(method="filter_tags")
-    category = django_filters.CharFilter(field_name="category__name", lookup_expr="in")
+    category = django_filters.CharFilter(
+        field_name="category__name", lookup_expr="exact"
+    )
     tags_mode = django_filters.ChoiceFilter(
         choices=[("or", "OR"), ("and", "AND")],
         method="filter_tag_mode",
