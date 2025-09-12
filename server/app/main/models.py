@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 USER = get_user_model()
 
 
-class Type(models.Model):
+class Category(models.Model):
     def __str__(self) -> str:
         return self.name
 
@@ -14,8 +14,8 @@ class Type(models.Model):
     user = models.ForeignKey(to=USER, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = "data type"
-        verbose_name_plural = "data types"
+        verbose_name = "category"
+        verbose_name_plural = "categories"
 
 
 class Tag(models.Model):
@@ -93,19 +93,18 @@ class Folder(Node):
 
 
 class Entry(Node):
-    """Model representing data entry of any type"""
-
     def __str__(self) -> str:
-        return f"{self.data_type} {self.pk}"
+        return f"{self.name} {self.pk} {self.category}"
 
     name = models.CharField(max_length=64, default="")
-    data_type = models.ForeignKey(to="Type", on_delete=models.CASCADE, blank=True)
+    category = models.ForeignKey(to="Category", on_delete=models.CASCADE, blank=True)
     tags = models.ManyToManyField(to="Tag", blank=True)
     context_date = models.DateField(blank=True, null=True)
     context_description = models.TextField(max_length=512, default="")
     create_time = models.DateTimeField(auto_created=True, auto_now=True)
     file_realid = models.CharField(max_length=64, default="")
     thumbnail = models.CharField(default=None, null=True, max_length=64)
+    file_ext = models.CharField(default=None, null=True, max_length=64)
 
     node = models.OneToOneField(
         to="Node",

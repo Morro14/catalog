@@ -1,4 +1,4 @@
-from main.models import Entry, Tag, Type
+from main.models import Entry, Tag, Category
 from rest_framework import serializers
 
 
@@ -8,15 +8,15 @@ class TagSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TypeSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Type
+        model = Category
         fields = "__all__"
 
 
 class EntrySerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(slug_field="name", many=True, read_only=True)
-    data_type = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    category = serializers.SlugRelatedField(slug_field="name", read_only=True)
 
     class Meta:
         model = Entry

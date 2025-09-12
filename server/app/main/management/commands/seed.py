@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from main.models import Node, Folder, Entry, Type, Tag
+from main.models import Node, Folder, Entry, Category, Tag
 from django.contrib.auth import get_user_model
 import random
 from faker import Faker
@@ -36,14 +36,14 @@ class Command(BaseCommand):
         num_folders = options["folders"]
         num_entries = options["entries"]
 
-        Type.objects.all().delete()
+        Category.objects.all().delete()
         Tag.objects.all().delete()
         Folder.objects.all().delete()
         Entry.objects.all().delete()
         USER.objects.exclude(is_superuser=True).delete()
 
         tree = ""
-        Type.objects.all().delete()
+        Category.objects.all().delete()
         Tag.objects.all().delete()
         Folder.objects.all().delete()
         Entry.objects.all().delete()
@@ -53,8 +53,9 @@ class Command(BaseCommand):
             num_folder_user = num_folders
             user = USER.objects.create_user(email=fake.email(), password="password123")
             root = Folder.objects.create(root=True, user=user, name="root")
-            types = [
-                Type.objects.create(name=fake.word(), user=user) for _ in range(0, 3)
+            categories = [
+                Category.objects.create(name=fake.word(), user=user)
+                for _ in range(0, 3)
             ]
             tags = [
                 Tag.objects.create(name=fake.word(), user=user) for _ in range(0, 5)
@@ -111,7 +112,7 @@ class Command(BaseCommand):
                 entry = Entry.objects.create(
                     user=user,
                     name=fake.word(),
-                    data_type=random.choice(types),
+                    category=random.choice(categories),
                     context_description=fake.text(max_nb_chars=256),
                     context_date=gen_random_datetime(
                         start=datetime(1900, 1, 1), end=datetime(2025, 1, 1)

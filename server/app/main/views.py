@@ -2,11 +2,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import views, exceptions, generics, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from main.models import Entry, Type, Tag, Folder
+from main.models import Entry, Category, Tag, Folder
 from main.serializers import (
     EntrySerializer,
     TagSerializer,
-    TypeSerializer,
+    CategorySerializer,
 )
 from dotenv import load_dotenv
 import jwt, os
@@ -83,21 +83,11 @@ class EntryListView(generics.ListAPIView):
         print("get queryset", self.request.user)
         queryset = (
             Entry.objects.filter(user=self.request.user)
-            .select_related("data_type")
+            .select_related("category")
             .prefetch_related("tags")
             .distinct()
         )
         return queryset
-
-
-class TypeViewSet(ModelViewSet):
-    queryset = Type.objects.all()
-    serializer_class = TypeSerializer
-
-
-class TagViewSet(ModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
 
 
 class TreeView(views.APIView):

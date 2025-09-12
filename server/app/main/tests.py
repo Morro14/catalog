@@ -1,10 +1,11 @@
 from django.test import TestCase as TestCaseDj
 from rest_framework.test import APIClient, APITestCase
-from .models import Node, Folder, Entry, Type, Tag
+from .models import Node, Folder, Entry, Category, Tag
 from django.contrib.auth import get_user_model
 from .exceptions import NameDublicateException
 from auth_app.utils.jwt_ import CustomJWTTest
 import json
+from django.db.models import Q, Count
 
 
 USER = get_user_model()
@@ -14,9 +15,9 @@ class TreeTest(APITestCase):
     def setUp(self):
         root = Folder.objects.create(root=True, name="root")
         folder_1 = Folder.objects.create(name="Folder 1", parent=root)
-        type_1 = Type.objects.create(name="Type 1")
-        Entry.objects.create(title="Entry 1", parent=root, data_type=type_1)
-        Entry.objects.create(title="Entry 2", parent=folder_1, data_type=type_1)
+        category = Category.objects.create(name="Category 1")
+        Entry.objects.create(title="Entry 1", parent=root, category=category)
+        Entry.objects.create(title="Entry 2", parent=folder_1, category=category)
 
     def test_gen_tree(self):
         tree = {"root": []}
@@ -53,10 +54,10 @@ class FolderUniqueNameTest(TestCaseDj):
         user = USER.objects.create(email="test@email.com", password="1234dofwe")
         root = Folder.objects.create(root=True, name="root", user=user)
         folder_1 = Folder.objects.create(name="Folder 1", parent=root, user=user)
-        type_1 = Type.objects.create(name="Type 1")
-        Entry.objects.create(name="Entry 1", parent=root, data_type=type_1, user=user)
+        category = Category.objects.create(name="Category 1")
+        Entry.objects.create(name="Entry 1", parent=root, category=category, user=user)
         Entry.objects.create(
-            name="Entry 2", parent=folder_1, data_type=type_1, user=user
+            name="Entry 2", parent=folder_1, category=category, user=user
         )
 
     def test_unique_name(self):
@@ -64,8 +65,8 @@ class FolderUniqueNameTest(TestCaseDj):
         root = Folder.objects.filter(root=True).first()
         entry = Entry.objects.get(name="Entry 1")
         # folder1 = Folder.objects.get(name="Folder 1")
-        type_1 = Type.objects.get(name="Type 1")
-        Entry.objects.create(name="Entry 2", parent=root, data_type=type_1, user=user)
+        category = Category.objects.get(name="Category 1")
+        Entry.objects.create(name="Entry 2", parent=root, category=category, user=user)
 
 
 import random
@@ -92,7 +93,7 @@ class PopulateDataTest(TestCaseDj):
         num_entries = 19
 
         tree = ""
-        Type.objects.all().delete()
+        Category.objects.all().delete()
         Tag.objects.all().delete()
         Folder.objects.all().delete()
         Entry.objects.all().delete()
@@ -103,8 +104,9 @@ class PopulateDataTest(TestCaseDj):
             user = USER.objects.create(email=fake.email(), password="password123")
 
             root = Folder.objects.create(root=True, user=user, name="root")
-            types = [
-                Type.objects.create(name=fake.word(), user=user) for _ in range(0, 3)
+            categories = [
+                Category.objects.create(name=fake.word(), user=user)
+                for _ in range(0, 3)
             ]
             tags = [
                 Tag.objects.create(name=fake.word(), user=user) for _ in range(0, 5)
@@ -117,8 +119,6 @@ class PopulateDataTest(TestCaseDj):
                 parent=root,
             ):
                 nonlocal num_folder_user
-                # print("folders left:", num_folder_user)
-                # print("total folders: ", total_folders)
                 if level == 0 or num_folder_user < 1:
                     return
                 if max_depth_path:
@@ -165,18 +165,17 @@ class PopulateDataTest(TestCaseDj):
             gen_row_folders()
 
             folders = Folder.objects.filter(user=user)
-            # print("folders:", len(folders), folders)
 
             def gen_entry(parent):
 
-                tags_selected = random.choices(population=tags, k=random.randrange(2))
+                tags_selected = random.choices(population=tags, k=2)
                 success = False
                 while not success:
                     try:
                         entry = Entry.objects.create(
                             user=user,
                             name=fake.word(),
-                            data_type=random.choice(types),
+                            category=random.choice(categories),
                             context_description=fake.text(max_nb_chars=256),
                             context_date=gen_random_datetime(
                                 start=datetime(1900, 1, 1), end=datetime(2025, 1, 1)
@@ -193,19 +192,10 @@ class PopulateDataTest(TestCaseDj):
                 gen_entry(f)
                 num_entries_user -= 1
 
-            # log tree
-            entries_ = Entry.objects.filter(user=user)
-            # print("entries:", len(entries_), entries_)
-
-            # print("tree before walking", tree)
             def walk_tree(dir, indent):
                 nonlocal tree
-                # print("dir:", dir.name)
-
                 folders, entries = dir.get_children()
-                # print(folders, entries)
                 contains = len(folders) + len(entries)
-                # print(contains)
                 tree += (
                     indent * "| " + "f: " + dir.name + f" | contains: {contains}" + "\n"
                 )
@@ -215,7 +205,6 @@ class PopulateDataTest(TestCaseDj):
                     tree += (indent + 1) * "| " + "e: " + entry.name + "\n"
 
             walk_tree(root, 0)
-        # print(tree)
 
     def test_filter(self):
         users = USER.objects.all()
@@ -230,17 +219,47 @@ class PopulateDataTest(TestCaseDj):
         # print("token", user_token)
         self.client.cookies["jwt"] = user_token
         response_1 = self.client.get(
-            path=f"http://127.0.0.1:8000/api-v1/catalog/entries/?tags={tags_filter[0].name}&tags={tags_filter[1].name}",
+            path=f"http://127.0.0.1:8000/api-v1/catalog/entries/?tags={tags_filter[0].name}&tags={tags_filter[1].name}&tags_mode=and",
         )
         # response_2 = self.client.get(
         #     path=f"http://127.0.0.1:8000/api-v1/catalog/entries/?tags={tags_filter[0].name}",
         # )
-        tags, types = [entry["tags"] for entry in response_1.json()], [
-            entry["data_type"] for entry in response_1.json()
+        entries = response_1.json()
+        print("ENTRIES FINAL:", len(entries), entries)
+        tags, categories = [entry["tags"] for entry in response_1.json()], [
+            entry["category"] for entry in response_1.json()
         ]
+        tags_matching_request = True
+        tags_filter_names = [t.name for t in tags_filter]
+        for entry_tags in tags:
+            for i, tag in enumerate(entry_tags):
+                tags_matching_request = False if tag != tags_filter_names[i] else True
+        if len(entries) == 0:
+            tags_matching_request = True
         print("tags:", tags)
-        print("types:", types)
-        # print("response:", response_2.json())
+        # print("categories:", categories)
+        self.assertTrue(tags_matching_request)
+
+    def test_query_filter(self):
+        users = USER.objects.all()
+        user = users[1]
+        tags = Tag.objects.filter(user=user)
+
+        tags_filter = tags[:2]
+        tags_ids = tags_filter.values("id")
+        # print("filter by tags:", tags_filter)
+
+        entries_f = (
+            Entry.objects.filter(user=user)
+            # .prefetch_related("tags")
+            .annotate(
+                num_matching_tags=Count("tags", filter=Q(tags__id__in=tags_ids))
+            ).filter(num_matching_tags=len(tags_ids))
+        )
+
+        print("entries filtered:", entries_f)
+        for entry in entries_f:
+            print(Tag.objects.filter(entry__pk=entry.pk))
 
 
 class EntryTest(TestCaseDj):
@@ -248,8 +267,10 @@ class EntryTest(TestCaseDj):
         user = USER.objects.create(email=fake.email(), password="eifj2938rW")
         root = Folder.objects.create(root=True, name=fake.word(), user=user)
         tags = [Tag.objects.create(name=fake.word(), user=user) for _ in range(3)]
-        types = [Type.objects.create(name=fake.word(), user=user) for _ in range(2)]
-        entry = Entry.objects.create(user=user, data_type=types[0], parent=root)
+        categories = [
+            Category.objects.create(name=fake.word(), user=user) for _ in range(2)
+        ]
+        entry = Entry.objects.create(user=user, category=categories[0], parent=root)
         entry.tags.set(tags)
         print("entry tags:", entry.tags.all())
 
