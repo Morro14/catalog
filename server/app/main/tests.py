@@ -1,8 +1,6 @@
 from django.test import TestCase as TestCaseDj
-from rest_framework.test import APIClient, APITestCase
 from .models import Node, Folder, Entry, Category, Tag
 from django.contrib.auth import get_user_model
-from .exceptions import NameDublicateException
 from auth_app.utils.jwt_ import CustomJWTTest
 from django.core.management import call_command
 
@@ -32,6 +30,11 @@ class PopulateDataTest(TestCaseDj):
         USERS = 2
 
         call_command("seed", users=USERS, entries=ENTRIES, folders=FOLDERS, depth=DEPTH)
+
+    def test_paths(self):
+        nodes = Node.objects.all()
+        node_paths = [n.path for n in nodes]
+        print(node_paths)
 
     def test_filter(self):
         users = USER.objects.all()
@@ -86,3 +89,17 @@ class PopulateDataTest(TestCaseDj):
             category_match_request = True
 
         self.assertTrue(category_match_request)
+
+
+class LoginTest(TestCaseDj):
+    def setUp(self):
+        USER.objects.create(email="test@email.com", password="password123")
+
+    def test_login(self):
+        email = "test@email.com"
+        password = "password123"
+        response = self.client.post(
+            "http://127.0.0.1:8000/auth/login",
+            data={"email": email, "password": password},
+        )
+        print(response.json())

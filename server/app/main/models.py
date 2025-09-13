@@ -49,7 +49,11 @@ class Node(models.Model):
         default=None,
         null=True,
     )
-    path = models.CharField(max_length=256)
+    path = models.CharField(max_length=256, editable=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.path = self.parent.path + "/" + self.parent.name if not self.root else ""
+        super(Node, self).save(*args, **kwargs)
 
     def get_name(self):
         node = self

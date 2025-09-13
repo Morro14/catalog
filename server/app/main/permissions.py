@@ -26,5 +26,6 @@ def jwt_auth(token):
 
 class IsJWTAuthenticated(permissions.BasePermission):
     def has_permission(self, request, view):
+        print("permission..")
         is_authenticated = jwt_auth(request.COOKIE.get("jwt"))
         return is_authenticated

@@ -50,7 +50,7 @@ class Command(BaseCommand):
         for _ in range(0, num_users):
             num_entries_user = num_entries
             num_folder_user = num_folders
-            user = USER.objects.create(email=fake.email(), password="password123")
+            user = USER.objects.create_user(email=fake.email(), password="password123")
 
             root = Folder.objects.create(root=True, user=user, name="root")
             categories = [
@@ -154,4 +154,5 @@ class Command(BaseCommand):
                     tree += (indent + 1) * "| " + "e: " + entry.name + "\n"
 
             walk_tree(root, 0)
+            print(user)
         self.stdout.write(self.style.SUCCESS("✅ Database seeded with fake data"))

@@ -30,9 +30,9 @@ class RegisterView(views.APIView):
 class LoginView(views.APIView):
     # TODO: check if already logged in and multiple devices login
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
-
         email = request.data["email"]
         password = request.data["password"]
         print("login view: email:", email, "password:", password)
