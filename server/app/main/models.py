@@ -49,6 +49,7 @@ class Node(models.Model):
         default=None,
         null=True,
     )
+    path = models.CharField(max_length=256)
 
     def get_name(self):
         node = self

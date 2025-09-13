@@ -4,6 +4,7 @@ from .models import Node, Folder, Entry, Category, Tag
 from django.contrib.auth import get_user_model
 from .exceptions import NameDublicateException
 from auth_app.utils.jwt_ import CustomJWTTest
+from django.core.management import call_command
 
 USER = get_user_model()
 
@@ -22,126 +23,15 @@ def gen_random_datetime(start: datetime, end: datetime):
 
 
 class PopulateDataTest(TestCaseDj):
+
     def setUp(self):
-        self.client = APIClient()
-        depth = 5
-        num_users = 2
-        num_folders = 9
-        num_entries = 19
 
-        tree = ""
-        Category.objects.all().delete()
-        Tag.objects.all().delete()
-        Folder.objects.all().delete()
-        Entry.objects.all().delete()
-        USER.objects.exclude(is_superuser=True).delete()
-        for _ in range(0, num_users):
-            num_entries_user = num_entries
-            num_folder_user = num_folders
-            user = USER.objects.create(email=fake.email(), password="password123")
+        DEPTH = 3
+        FOLDERS = 9
+        ENTRIES = 15
+        USERS = 2
 
-            root = Folder.objects.create(root=True, user=user, name="root")
-            categories = [
-                Category.objects.create(name=fake.word(), user=user)
-                for _ in range(0, 3)
-            ]
-            tags = [
-                Tag.objects.create(name=fake.word(), user=user) for _ in range(0, 5)
-            ]
-            tree += f"user: {user}\n"
-
-            def gen_row_folders(
-                level=depth,
-                max_depth_path=True,
-                parent=root,
-            ):
-                nonlocal num_folder_user
-                if level == 0 or num_folder_user < 1:
-                    return
-                if max_depth_path:
-                    success = False
-                    while not success:
-                        try:
-                            max_depth_folder = Folder.objects.create(
-                                user=user, parent=parent, name=fake.word()
-                            )
-                            success = True
-                        except NameDublicateException:
-                            continue
-                    num_folder_user -= 1
-                    gen_row_folders(
-                        level=level - 1,
-                        max_depth_path=True,
-                        parent=max_depth_folder,
-                    )
-
-                    max_depth_folder = False
-                num_folder_row = 0
-                if num_folder_user > 1:
-                    num_folder_row = random.randint(0, num_folder_user // 2)
-                elif num_folder_user == 1:
-                    num_folder_row = 1
-
-                for _ in range(num_folder_row):
-                    success = False
-                    while not success:
-                        try:
-                            folder = Folder.objects.create(
-                                user=user, parent=parent, name=fake.word()
-                            )
-                            success = True
-                        except NameDublicateException:
-                            continue
-                    num_folder_user -= 1
-                    gen_row_folders(
-                        level=level - 1,
-                        max_depth_path=False,
-                        parent=folder,
-                    )
-
-            gen_row_folders()
-
-            folders = Folder.objects.filter(user=user)
-
-            def gen_entry(parent):
-
-                tags_selected = random.choices(population=tags, k=2)
-                success = False
-                while not success:
-                    try:
-                        entry = Entry.objects.create(
-                            user=user,
-                            name=fake.word(),
-                            category=random.choice(categories),
-                            context_description=fake.text(max_nb_chars=256),
-                            context_date=gen_random_datetime(
-                                start=datetime(1900, 1, 1), end=datetime(2025, 1, 1)
-                            ),
-                            parent=parent,
-                        )
-                        success = True
-                    except NameDublicateException:
-                        continue
-                entry.tags.set(tags_selected)
-
-            while num_entries_user > 0:
-                f = random.choice(folders)
-                gen_entry(f)
-                num_entries_user -= 1
-
-            def walk_tree(dir, indent):
-                nonlocal tree
-                folders, entries = dir.get_children()
-                contains = len(folders) + len(entries)
-                tree += (
-                    indent * "| " + "f: " + dir.name + f" | contains: {contains}" + "\n"
-                )
-                for folder in folders:
-                    walk_tree(folder, indent + 1)
-                for entry in entries:
-                    tree += (indent + 1) * "| " + "e: " + entry.name + "\n"
-
-            walk_tree(root, 0)
+        call_command("seed", users=USERS, entries=ENTRIES, folders=FOLDERS, depth=DEPTH)
 
     def test_filter(self):
         users = USER.objects.all()
@@ -180,7 +70,7 @@ class PopulateDataTest(TestCaseDj):
 
         self.assertTrue(tags_matching_request)
 
-        # request testing tags and tags_mode=and filter
+        # request testing category filter
         response_2 = self.client.get(
             path=f"http://127.0.0.1:8000/api-v1/catalog/entries/?category={category_filter}",
         )
