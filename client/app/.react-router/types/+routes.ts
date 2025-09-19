@@ -19,13 +19,23 @@ type Pages = {
   "/catalog": {
     params: {};
   };
-  "/auth": {
+  "/catalog/:entryId": {
+    params: {
+      "entryId": string;
+    };
+  };
+  "/test-catalog": {
     params: {};
   };
-  "/account": {
-    params: {};
+  "/test-catalog/:entry": {
+    params: {
+      "entry": string;
+    };
   };
   "/password-reset": {
+    params: {};
+  };
+  "/oauth-success": {
     params: {};
   };
 };
@@ -33,18 +43,18 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signup" | "/catalog" | "/auth" | "/account" | "/password-reset";
+    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/test-catalog" | "/test-catalog/:entry" | "/password-reset" | "/oauth-success";
+  };
+  "main.tsx": {
+    id: "main";
+    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/test-catalog" | "/test-catalog/:entry" | "/password-reset" | "/oauth-success";
   };
   "routes/Main.tsx": {
     id: "routes/Main";
-    page: "/" | "/signup" | "/catalog" | "/auth" | "/account" | "/password-reset";
+    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/test-catalog" | "/test-catalog/:entry" | "/password-reset" | "/oauth-success";
   };
   "routes/Index.tsx": {
     id: "routes/Index";
-    page: "/" | "/signup";
-  };
-  "routes/Login.tsx": {
-    id: "routes/Login";
     page: "/";
   };
   "routes/Signup.tsx": {
@@ -53,18 +63,26 @@ type RouteFiles = {
   };
   "routes/Catalog.tsx": {
     id: "routes/Catalog";
-    page: "/catalog";
+    page: "/catalog" | "/catalog/:entryId";
   };
-  "routes/Auth.tsx": {
-    id: "routes/Auth";
-    page: "/auth";
+  "routes/CatalogEntry.tsx": {
+    id: "routes/CatalogEntry";
+    page: "/catalog/:entryId";
   };
-  "routes/Account.tsx": {
-    id: "routes/Account";
-    page: "/account";
+  "routes/TestCatalog.tsx": {
+    id: "routes/TestCatalog";
+    page: "/test-catalog" | "/test-catalog/:entry";
+  };
+  "routes/TestEntry.tsx": {
+    id: "routes/TestEntry";
+    page: "/test-catalog/:entry";
   };
   "routes/PassReset.tsx": {
     id: "routes/PassReset";
     page: "/password-reset";
+  };
+  "routes/OauthSuccess.tsx": {
+    id: "routes/OauthSuccess";
+    page: "/oauth-success";
   };
 };

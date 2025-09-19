@@ -1,0 +1,78 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap");
+@import "tailwindcss";
+@import "./login.css";
+
+body {
+	@apply m-0 flex justify-center font-serif bg-white;
+}
+#root {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+@theme {
+	--text-title: 34px;
+	--color-red-error: #ff2c2c;
+	--color-gray-line: rgb(164, 164, 164, 0.34);
+
+	--color-gray-1: #a4a4a4;
+	--color-gray-2: #5f5f5f;
+	--color-gray-3: #dbdbdb;
+	--color-gray-4: #ededed;
+	--color-green-dark: #009071;
+	--color-green-medium: rgb(51, 165, 140, 0.59);
+	--color-green-light: rgb(51, 165, 140, 0.12);
+	--width-container-index: 800px;
+	--color-dark-green: #009071;
+	--font-sans: "Source Sans 3", sans-serif;
+	--font-serif: "Source Serif 4", serif;
+	--font-mono: "Source Code Pro", sans-serif;
+	--color-tag-pink: #ffcbfd;
+	--color-tag-blue: #cce4ff;
+	--color-tag-orange: #ffe7cc;
+	--color-tag-green: #ccffce;
+}
+h1 {
+	@apply text-4xl font-semibold;
+}
+h3 {
+	@apply text-2xl font-semibold;
+}
+.container-width-responsive {
+	@apply lg:max-w-[1284px];
+}
+.container-text-width-responsive {
+	@apply lg:w-[862px];
+}
+.gr-green-medium {
+	background: RGBA(51, 165, 140, 1);
+	background: linear-gradient(
+		97deg,
+		rgba(51, 165, 140, 0.34) 0%,
+		rgba(51, 165, 140, 0.16) 10%,
+		rgba(51, 165, 140, 0.24) 75%,
+		rgba(51, 165, 140, 0) 100%
+	);
+}
+
+.gr-gray-line {
+	background: #ffffff;
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 1) 0%,
+		rgba(164, 164, 164, 0.34) 5%
+	);
+}
+.gr-gray-line-v {
+	background: #ffffff;
+	background: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 1) 0%,
+		rgba(164, 164, 164, 0.34) 5%
+	);
+}
+.input-login {
+	@apply border border-[var(--color-gray-1)] rounded-sm font-sans w-[240px] h-[36px] px-3 text-[var(--color-gray-1)];
+}

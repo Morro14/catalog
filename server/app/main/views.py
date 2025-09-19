@@ -62,11 +62,10 @@ def jwt_auth(token):
 
 
 class EntryView(views.APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
     def get(self, request, pk):
+        print("entry view")
         user = self.request.user
-        entry = get_object_or_404(model=Entry, pk=pk, user=user)
+        entry = get_object_or_404(klass=Entry, pk=pk, user=user)
         if not entry:
             raise exceptions.NotFound("Entry has not been found")
         serializer = EntrySerializer(entry)

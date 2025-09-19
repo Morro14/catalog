@@ -5,7 +5,7 @@ from .models import User
 from .serializers import UserSerializer
 from django.conf import settings
 import requests
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.http import HttpResponseRedirect
 
 from .utils.jwt_ import CustomJWT
@@ -36,7 +36,7 @@ class LoginView(views.APIView):
         email = request.data["email"]
         password = request.data["password"]
         print("login view: email:", email, "password:", password)
-        user = User.objects.filter(email=email).first()
+        user = get_object_or_404(klass=User, email=email)
         print("users pass:", user.password)
         if not User:
             print("user not found")
