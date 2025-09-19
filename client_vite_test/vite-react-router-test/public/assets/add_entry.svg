@@ -1,6 +1,0 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M4 0H13V13H0V4L4 0Z" fill="white"/>
-<path d="M4 0V4H0L4 0Z" fill="#ADADAD"/>
-<line x1="12.5" y1="9" x2="12.5" y2="16" stroke="#414141"/>
-<line x1="9" y1="12.5" x2="16" y2="12.5" stroke="#414141"/>
-</svg>
