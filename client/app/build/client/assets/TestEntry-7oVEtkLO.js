@@ -1,1 +1,0 @@
-import{w as t,j as e}from"./chunk-B7RQU5TL-2tFqDICC.js";const o=t(function(){return console.log("test entry"),e.jsx("div",{className:"flex flex-col justify-center w-full",children:"Entry"})});export{o as default};

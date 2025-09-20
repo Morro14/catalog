@@ -1,7 +1,7 @@
 import { useState } from "react";
-import FileTree from "./FileTree";
-import createEntryIcon from "../../../src/assets/add_entry.svg";
-import createFolderIcon from "../../../src/assets/add_folder.svg";
+import FileTree from "./catalog/FileTree";
+import createEntryIcon from "root/src/assets/add_entry.svg";
+import createFolderIcon from "root/src/assets/add_folder.svg";
 
 export default function LeftPannel({ treeData }: any) {
 	const [blockVisible, setBlockVisible] = useState({

@@ -3,6 +3,7 @@ import Tag from "~/components/catalog/Tag";
 import { getTagColor } from "~/components/catalog/tagColors";
 import type { Route } from "./+types/CatalogEntry";
 import { axiosInstance } from "~/main";
+import { useMemo } from "react";
 
 const ENTRY_URL = "api-v1/catalog/entry";
 
@@ -28,11 +29,13 @@ export function HydrateFallback() {
 }
 
 export default function CatalogEntry({ loaderData }: Route.ComponentProps) {
-	// console.log("FilesView data:", data);
 	console.log("file view", loaderData);
 	const entryData = loaderData.entryData?.data;
-	const tagPallete = ["pink", "green", "blue", "orange"];
-	const tagColors = entryData ? getTagColor(entryData.tags, tagPallete) : [];
+
+	const tagColors = useMemo(
+		() => (entryData ? getTagColor(entryData.tags) : []),
+		[loaderData]
+	);
 	return !loaderData ?
 			<div className="grow">
 				<div className="bg-gray-4 h-[26px] ">
@@ -48,24 +51,27 @@ export default function CatalogEntry({ loaderData }: Route.ComponentProps) {
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3">{entryData.path}</div>
 				</div>
-				<h3 className="font-sans font-normal">{entryData.name}</h3>
-				<p>{entryData.context_description}</p>
-				<div className="flex justify-between font-mono text-xs">
-					<Link to="catalog/entry/edit">edit</Link>
-					<div>
-						<div>tags: </div>
-						<div>
-							{entryData.tags.map((tag: any, i: number) => (
-								<Tag
-									name={tag}
-									color={tagColors[i]}
-									key={`tag-${tag}`}
-								></Tag>
-							))}
+				<div className="px-[38px] py-[21px]">
+					<div className="font-sans font-normal text-2xl">{entryData.name}</div>
+					<p className="font-sans mt-4">{entryData.context_description}</p>
+					<div className="h-[1px] bg-gray-4 mt-4"></div>
+					<div className="flex justify-between font-mono text-xs mt-1">
+						<Link to="catalog/entry/edit">edit</Link>
+						<div className="flex gap-1">
+							<div>tags: </div>
+							<div className="flex gap-1">
+								{entryData.tags.map((tag: any, i: number) => (
+									<Tag
+										name={tag}
+										color={tagColors[i]}
+										key={`tag-${tag}`}
+									></Tag>
+								))}
+							</div>
 						</div>
+						<div>category: {entryData.category}</div>
+						<div>date: {entryData.context_date}</div>
 					</div>
-					<div>category: {entryData.category}</div>
-					<div>date: {entryData.context_date}</div>
 				</div>
 			</div>;
 }

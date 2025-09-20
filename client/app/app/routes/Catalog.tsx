@@ -1,9 +1,10 @@
-import LeftPannel from "~/components/catalog/LeftPannel";
+import LeftPannel from "~/components/LeftPannel";
 import { axiosInstance } from "~/main";
 import type { Route } from "./+types/Catalog";
 import { Link, Outlet, useNavigate } from "react-router";
 import ServiceNav from "./ServiceNav";
 import type { ApiResponse } from "~/types/loader_data";
+import type { ShouldRevalidateFunctionArgs } from "react-router";
 
 const TREE_URL = "api-v1/catalog/tree";
 const ENTRY_URL = "api-v1/catalog/entry";
@@ -13,6 +14,20 @@ interface CatalogLoaderData {
 	entryData?: ApiResponse<any>;
 }
 
+export function shouldRevalidate({
+	currentUrl,
+	nextUrl,
+}: ShouldRevalidateFunctionArgs) {
+	// console.log(
+	// 	"shouldRevalidate",
+	// 	currentUrl.pathname.startsWith("/catalog"),
+	// 	nextUrl.pathname.startsWith("/catalog")
+	// );
+	return !(
+		currentUrl.pathname.startsWith("/catalog") &&
+		nextUrl.pathname.startsWith("/catalog")
+	);
+}
 export async function clientLoader({
 	params,
 }: Route.ClientLoaderArgs): Promise<CatalogLoaderData> {
@@ -33,13 +48,13 @@ export async function clientLoader({
 export function HydrateFallback() {
 	return <>Loading...</>;
 }
+
 export default function Catalog({ loaderData }: Route.ComponentProps) {
 	console.log("catalog render");
 	return loaderData.treeData.status === 200 ?
 			<div className="w-full min-h-screen flex">
 				<LeftPannel treeData={loaderData.treeData}></LeftPannel>
 				<Outlet></Outlet>
-				{/* <FilesView data={loaderData.entryData}></FilesView> */}
 
 				<div className="grow max-w-4/9">
 					<div className="bg-gray-3 h-[26px]"></div>

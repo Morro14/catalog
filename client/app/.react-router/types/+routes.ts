@@ -24,14 +24,6 @@ type Pages = {
       "entryId": string;
     };
   };
-  "/test-catalog": {
-    params: {};
-  };
-  "/test-catalog/:entry": {
-    params: {
-      "entry": string;
-    };
-  };
   "/password-reset": {
     params: {};
   };
@@ -43,15 +35,15 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/test-catalog" | "/test-catalog/:entry" | "/password-reset" | "/oauth-success";
+    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/password-reset" | "/oauth-success";
   };
   "main.tsx": {
     id: "main";
-    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/test-catalog" | "/test-catalog/:entry" | "/password-reset" | "/oauth-success";
+    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/password-reset" | "/oauth-success";
   };
   "routes/Main.tsx": {
     id: "routes/Main";
-    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/test-catalog" | "/test-catalog/:entry" | "/password-reset" | "/oauth-success";
+    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/password-reset" | "/oauth-success";
   };
   "routes/Index.tsx": {
     id: "routes/Index";
@@ -65,17 +57,13 @@ type RouteFiles = {
     id: "routes/Catalog";
     page: "/catalog" | "/catalog/:entryId";
   };
+  "routes/CatalogIndex.tsx": {
+    id: "routes/CatalogIndex";
+    page: "/catalog";
+  };
   "routes/CatalogEntry.tsx": {
     id: "routes/CatalogEntry";
     page: "/catalog/:entryId";
-  };
-  "routes/TestCatalog.tsx": {
-    id: "routes/TestCatalog";
-    page: "/test-catalog" | "/test-catalog/:entry";
-  };
-  "routes/TestEntry.tsx": {
-    id: "routes/TestEntry";
-    page: "/test-catalog/:entry";
   };
   "routes/PassReset.tsx": {
     id: "routes/PassReset";

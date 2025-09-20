@@ -2,6 +2,7 @@
 @import "tailwindcss";
 @import "./login.css";
 @source "inline:pl-[10px] pl-[20px] pl-[30px] pl-[40px]";
+@source "inline:bg-tag-pink bg-tag-blue";
 
 body {
 	@apply m-0 flex justify-center font-serif bg-white;
@@ -12,6 +13,12 @@ body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+}
+:root {
+	--color-tag-pink: #ffcbfd;
+	--color-tag-blue: #cce4ff;
+	--color-tag-orange: #ffe7cc;
+	--color-tag-green: #ccffce;
 }
 
 @theme {
@@ -36,6 +43,7 @@ body {
 	--color-tag-orange: #ffe7cc;
 	--color-tag-green: #ccffce;
 }
+
 h1 {
 	@apply text-4xl font-semibold;
 }

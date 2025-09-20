@@ -1,13 +1,13 @@
 export default function Tag({ name, color }: { name: string; color: string }) {
-	// console.log("tag name", name);
-	// const bgColor = `bg-tag-${color}`;
+	console.log("tag name:", name, "color:", color);
+	const bgColor = `var(--color-tag-${color})`;
+	// const tagColor = `bg-tag-${color}`;
 	return (
 		<div
-			style={{ backgroundColor: `var(--color-tag-${color})` }}
-			className="rounded-b-sm px-1.5"
+			style={{ backgroundColor: bgColor }}
+			className={`rounded-sm px-1.5`}
 		>
 			{name}
-			{/* <div className="text-tag-green">test</div> */}
 		</div>
 	);
 }

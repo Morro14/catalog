@@ -23,7 +23,7 @@
 		"noEmit": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
-		"strict": true,
+		"strict": false,
 
 		"allowImportingTsExtensions": true,
 		"noUnusedLocals": false,

@@ -1,14 +1,15 @@
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 
 export default function FileTree({ treeData }: any) {
 	if (!treeData) {
 		return <div>No data</div>;
 	}
 	const tree = treeData.data.tree.root;
-	const nav = useNavigate();
-	const handleEntryClick = (e: React.SyntheticEvent, pk: number) => {
-		nav("/catalog/" + pk);
-	};
+	// const nav = useNavigate();
+	// const handleEntryClick = (e: React.SyntheticEvent, pk: number) => {
+	// 	nav("/catalog/" + pk);
+	// 	console.log("entry click");
+	// };
 
 	function formatRow(row: [any], indent: number, path = "") {
 		let rowFormatted: any = [];
@@ -60,19 +61,26 @@ export default function FileTree({ treeData }: any) {
 						id={`input-${path}/${file.name}`}
 						className="peer hidden"
 					/>
-					<label
-						className={
-							"flex select-none cursor-pointer peer-checked:[&_.arrow]:rotate-90 text-gray-700" +
-							(file.type === "folder" ? " font-semibold" : " font-normal")
-						}
-						htmlFor={`input-${path}/${file.name}`}
-						onClick={(e) =>
-							file.type === "entry" ? handleEntryClick(e, file.pk) : ""
-						}
-					>
-						{arrow_}
-						{file.name}
-					</label>
+					{file.type === "folder" ?
+						<label
+							className="flex select-none cursor-pointer peer-checked:[&_.arrow]:rotate-90 text-gray-700 font-semibold"
+							htmlFor={`input-${path}/${file.name}`}
+						>
+							{arrow_}
+							{file.name}
+						</label>
+					:	<Link to={"/catalog/" + file.pk}>
+							<label
+								className={
+									"flex select-none cursor-pointer peer-checked:[&_.arrow]:rotate-90 text-gray-700 font-normal"
+								}
+								htmlFor={`input-${path}/${file.name}`}
+							>
+								{arrow_}
+								{file.name}
+							</label>
+						</Link>
+					}
 					<div
 						id={`content-${path}/${file.name}`}
 						className="hidden peer-checked:block"
