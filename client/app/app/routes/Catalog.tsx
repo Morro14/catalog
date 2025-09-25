@@ -8,9 +8,11 @@ import type { ShouldRevalidateFunctionArgs } from "react-router";
 
 const TREE_URL = "api-v1/catalog/tree";
 const ENTRY_URL = "api-v1/catalog/entry";
+const GOOGLE_DRIVE_URL = "api-v1/catalog/google/get-files";
 
 interface CatalogLoaderData {
 	treeData: ApiResponse<any>;
+	serviceData: ApiResponse<any>;
 	entryData?: ApiResponse<any>;
 }
 
@@ -41,8 +43,16 @@ export async function clientLoader({
 			// console.log(r);
 			return { data: r.data, status: r.status, message: r.message };
 		});
-
-	return { treeData };
+	const serviceData = await axiosInstance
+		.get(GOOGLE_DRIVE_URL)
+		.then((r) => {
+			console.log("service response:", r);
+			return { data: r.data, status: r.status, message: "success" };
+		})
+		.catch((r) => {
+			return { data: r.data, status: r.status, message: r.message };
+		});
+	return { treeData, serviceData };
 }
 
 export function HydrateFallback() {
@@ -58,7 +68,7 @@ export default function Catalog({ loaderData }: Route.ComponentProps) {
 
 				<div className="grow max-w-4/9">
 					<div className="bg-gray-3 h-[26px]"></div>
-					<ServiceNav></ServiceNav>
+					<ServiceNav serviceData={loaderData.serviceData}></ServiceNav>
 				</div>
 			</div>
 		:	<div className="flex flex-col justify-center items-center mt-10">

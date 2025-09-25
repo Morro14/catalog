@@ -7,6 +7,8 @@ import { axiosInstance } from "~/main";
 
 const PROFILE_URL = "auth/profile";
 
+export function shouldRevalidate() {}
+
 export async function clientLoader() {
 	const userInfo = axiosInstance
 		.get(PROFILE_URL, { withCredentials: true })

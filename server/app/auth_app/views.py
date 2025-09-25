@@ -35,26 +35,31 @@ class LoginView(views.APIView):
     def post(self, request):
         email = request.data["email"]
         password = request.data["password"]
-        print("login view: email:", email, "password:", password)
         user = get_object_or_404(klass=User, email=email)
-        print("users pass:", user.password)
         if not User:
             print("user not found")
             raise exceptions.AuthenticationFailed("User not found.")
         if not user.check_password(password):
             print("incorrect password")
             raise exceptions.AuthenticationFailed("Incorrect password.")
-        print("login view: user authenticated")
         token = CustomJWT(content={"id": str(user.id)}).get_token()
         response = Response()
         response.set_cookie(
-            key="jwt", value=token, httponly=True, samesite="None", secure=True
+            key="jwt",
+            value=token,
+            httponly=True,
+            samesite="None",
+            secure=True,
         )
+        print(response.cookies)
         response.data = {"message": "User has successfully logged in."}
         return response
 
 
 class GoogleLoginView(views.APIView):
+    authentication_classes = []
+    permission_classes = []
+
     def get(self, request):
         code = request.GET.get("code")
         token_url = "https://oauth2.googleapis.com/token"
@@ -65,11 +70,9 @@ class GoogleLoginView(views.APIView):
             "redirect_uri": "http://127.0.0.1:8000/auth/google/callback",
             "grant_type": "authorization_code",
         }
-        print(data)
         r = requests.post(token_url, data=data)
         token_data = r.json()
-        print(token_data)
-
+        print("token_data", token_data)
         access_token = token_data["access_token"]
         refresh_token = token_data["refresh_token"]
 
@@ -84,26 +87,27 @@ class GoogleLoginView(views.APIView):
         user.save()
         temp_token = CustomJWT(content={"id": str(user.id)}, expires_in=60).get_token()
         response = HttpResponseRedirect(
-            f"http://localhost:5173/oauth-success?token={temp_token}"
+            f"http://localhost:5173/oauth-success?token={temp_token}",
         )
-        # response.set_cookie(
-        #     key="jwt", value=temp_token, httponly=True, samesite="None", secure=True
-        # )
-        # response.set_cookie(key="email", value=email, samesite="None", secure=True)
-
         return response
 
 
 class TempTokenConvert(views.APIView):
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
         temp_token = request.data["token"]
         user = jwt_get_user(temp_token)
         token = CustomJWT(content={"id": str(user.id)}).get_token()
         response = Response()
         response.set_cookie(
-            key="jwt", value=token, httponly=True, samesite="None", secure=True
+            key="jwt",
+            value=token,
+            httponly=True,
+            samesite="None",
+            secure=True,
         )
-
         response.data = {
             "message": "User has successfully logged in.",
             "email": user.email,

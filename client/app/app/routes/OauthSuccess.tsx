@@ -31,6 +31,12 @@ export default function OauthSuccess({ loaderData }: Route.ComponentProps) {
 				<div>
 					<div>Authorization error</div>
 					<div>Something went wrong</div>
+					<Link
+						to="/"
+						className="underline"
+					>
+						back to main page
+					</Link>
 				</div>
 			:	<div className="">
 					<div>You have successfully signed in</div>

@@ -1,1 +1,4 @@
 1. Synchronize oauth refresh token and JWT token
+2. Redirect from GoogleAPIView to client if exception
+3. Multiple devices authentication
+4. Exception handling in google callback

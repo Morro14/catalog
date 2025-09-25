@@ -24,6 +24,7 @@ export default function Login() {
 		const passwordValid = v.validatePassword(password);
 		console.log("valid data; password", passwordValid, "email:", emailValid);
 		if (emailValid && passwordValid) {
+			console.log("sending request");
 			axios
 				.post(loginURL, { email: email, password: password })
 				.then((r) => {
