@@ -1,42 +1,17 @@
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import Tag from "~/components/catalog/Tag";
 import { getTagColor } from "~/components/catalog/tagColors";
-import type { Route } from "./+types/CatalogEntry";
-import { axiosInstance } from "~/main";
-import { useMemo } from "react";
+import { useFetchV3 } from "~/utils/fetchHook";
+
+import Fallback from "~/components/Fallback";
 
 const ENTRY_URL = "api-v1/catalog/entry";
 
-export async function clientLoader({ params }: Route.ClientActionArgs) {
-	const entryID = params.entryId;
-	if (entryID === undefined) {
-		const entryData = undefined;
-		return { entryData };
-	}
-	const entryData = await axiosInstance
-		.get(ENTRY_URL + "/" + entryID)
-		.then((r) => {
-			return { data: r.data, status: r.status, message: "success" };
-		})
-		.catch((r) => {
-			// console.log(r);
-			return { data: r.data, status: r.status, message: r.message };
-		});
-	return { entryData };
-}
-export function HydrateFallback() {
-	return <div className="text-center grow">Loading...</div>;
-}
-
-export default function CatalogEntry({ loaderData }: Route.ComponentProps) {
-	console.log("file view", loaderData);
-	const entryData = loaderData.entryData?.data;
-
-	const tagColors = useMemo(
-		() => (entryData ? getTagColor(entryData.tags) : []),
-		[loaderData]
-	);
-	return !loaderData ?
+export default function CatalogEntry() {
+	const [params, setParams] = useSearchParams();
+	const entryId = params.get("entry");
+	if (!entryId) {
+		return (
 			<div className="grow">
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3"></div>
@@ -44,6 +19,63 @@ export default function CatalogEntry({ loaderData }: Route.ComponentProps) {
 				<div className="text-center">
 					<h5 className="text-gray-400 font-mono">
 						Choose a folder or an entry to display
+					</h5>
+				</div>
+			</div>
+		);
+	}
+	const fetchedResults = useFetchV3(ENTRY_URL + "/" + entryId);
+
+	const fetchedDataCheck =
+		fetchedResults && fetchedResults.fetchedData ? true : false;
+
+	const entryData =
+		fetchedDataCheck && fetchedResults.fetchedData.status === 200 ?
+			fetchedResults.fetchedData.data
+		:	undefined;
+
+	const loading = fetchedResults?.loading;
+	if (loading) {
+		return (
+			<div className="grow">
+				<div className="bg-gray-4 h-[26px] ">
+					<div className="font-sans text-sm ml-3"></div>
+				</div>
+				<div className="text-center">
+					<h5 className="text-gray-400 font-mono">Loading...</h5>
+				</div>
+			</div>
+		);
+	}
+	const tagColors = entryData ? getTagColor(entryData.tags) : undefined;
+	console.log("fetch results", fetchedResults);
+	console.log(loading);
+	return (
+		!fetchedResults ?
+			<div className="grow">
+				<div className="bg-gray-4 h-[26px] ">
+					<div className="font-sans text-sm ml-3"></div>
+				</div>
+				<div className="text-center">
+					<h5 className="text-gray-400 font-mono">
+						Choose a folder or an entry to display
+					</h5>
+				</div>
+			</div>
+		: fetchedResults.fetchedData.status !== 200 ?
+			<div className="grow">
+				<div className="bg-gray-4 h-[26px] ">
+					<div className="font-sans text-sm ml-3"></div>
+				</div>
+				<div className="text-center">
+					<h5 className="text-gray-400 font-mono">
+						<Fallback
+							message={
+								Math.floor(fetchedResults.fetchedData.status / 100) === 5 ?
+									"Could not fetch the data."
+								:	"Something went wrong."
+							}
+						></Fallback>
 					</h5>
 				</div>
 			</div>
@@ -73,5 +105,6 @@ export default function CatalogEntry({ loaderData }: Route.ComponentProps) {
 						<div>date: {entryData.context_date}</div>
 					</div>
 				</div>
-			</div>;
+			</div>
+	);
 }

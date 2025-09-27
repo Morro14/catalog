@@ -5,6 +5,8 @@ import { Link, Outlet, useNavigate } from "react-router";
 import ServiceNav from "./ServiceNav";
 import type { ApiResponse } from "~/types/loader_data";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
+import Fallback from "~/components/Fallback";
+import CatalogEntry from "./CatalogEntry";
 
 const TREE_URL = "api-v1/catalog/tree";
 const ENTRY_URL = "api-v1/catalog/entry";
@@ -12,7 +14,7 @@ const GOOGLE_DRIVE_URL = "api-v1/catalog/google/get-files";
 
 interface CatalogLoaderData {
 	treeData: ApiResponse<any>;
-	serviceData: ApiResponse<any>;
+	serviceData?: ApiResponse<any>;
 	entryData?: ApiResponse<any>;
 }
 
@@ -33,7 +35,6 @@ export function shouldRevalidate({
 export async function clientLoader({
 	params,
 }: Route.ClientLoaderArgs): Promise<CatalogLoaderData> {
-	console.log("catalog loader");
 	const treeData = await axiosInstance
 		.get(TREE_URL)
 		.then((r) => {
@@ -43,32 +44,35 @@ export async function clientLoader({
 			// console.log(r);
 			return { data: r.data, status: r.status, message: r.message };
 		});
-	const serviceData = await axiosInstance
-		.get(GOOGLE_DRIVE_URL)
-		.then((r) => {
-			console.log("service response:", r);
-			return { data: r.data, status: r.status, message: "success" };
-		})
-		.catch((r) => {
-			return { data: r.data, status: r.status, message: r.message };
-		});
-	return { treeData, serviceData };
+
+	return { treeData };
 }
 
 export function HydrateFallback() {
-	return <>Loading...</>;
+	return (
+		<div className="w-full min-h-screen flex">
+			<LeftPannel treeData={undefined}></LeftPannel>
+			<div className="grow max-w-4/9">
+				<div className="bg-gray-3 h-[26px]"></div>
+				<Fallback message={"loading..."}></Fallback>
+			</div>
+			<div className="grow max-w-4/9">
+				<div className="bg-gray-3 h-[26px]"></div>
+				<Fallback message={"loading..."}></Fallback>
+			</div>
+		</div>
+	);
 }
 
 export default function Catalog({ loaderData }: Route.ComponentProps) {
-	console.log("catalog render");
 	return loaderData.treeData.status === 200 ?
 			<div className="w-full min-h-screen flex">
 				<LeftPannel treeData={loaderData.treeData}></LeftPannel>
-				<Outlet></Outlet>
+				<CatalogEntry></CatalogEntry>
 
 				<div className="grow max-w-4/9">
 					<div className="bg-gray-3 h-[26px]"></div>
-					<ServiceNav serviceData={loaderData.serviceData}></ServiceNav>
+					<ServiceNav></ServiceNav>
 				</div>
 			</div>
 		:	<div className="flex flex-col justify-center items-center mt-10">

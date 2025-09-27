@@ -1,4 +1,5 @@
 import { useNavigate, Link } from "react-router";
+import { useSearchParams } from "react-router";
 
 export default function FileTree({ treeData }: any) {
 	if (!treeData) {
@@ -6,11 +7,10 @@ export default function FileTree({ treeData }: any) {
 	}
 	const tree = treeData.data.tree.root;
 	// const nav = useNavigate();
-	// const handleEntryClick = (e: React.SyntheticEvent, pk: number) => {
-	// 	nav("/catalog/" + pk);
-	// 	console.log("entry click");
-	// };
-
+	const [searchParams, setSearchParams] = useSearchParams();
+	const handleEntryClick = (e: React.SyntheticEvent, entryId: number) => {
+		setSearchParams(`?entry=${entryId}`);
+	};
 	function formatRow(row: [any], indent: number, path = "") {
 		let rowFormatted: any = [];
 		row.forEach((file, index) => {
@@ -69,17 +69,16 @@ export default function FileTree({ treeData }: any) {
 							{arrow_}
 							{file.name}
 						</label>
-					:	<Link to={"/catalog/" + file.pk}>
-							<label
-								className={
-									"flex select-none cursor-pointer peer-checked:[&_.arrow]:rotate-90 text-gray-700 font-normal"
-								}
-								htmlFor={`input-${path}/${file.name}`}
-							>
-								{arrow_}
-								{file.name}
-							</label>
-						</Link>
+					:	<label
+							className={
+								"flex select-none cursor-pointer peer-checked:[&_.arrow]:rotate-90 text-gray-700 font-normal"
+							}
+							htmlFor={`input-${path}/${file.name}`}
+							onClick={(e) => handleEntryClick(e, file.pk)}
+						>
+							{arrow_}
+							{file.name}
+						</label>
 					}
 					<div
 						id={`content-${path}/${file.name}`}

@@ -19,11 +19,6 @@ type Pages = {
   "/catalog": {
     params: {};
   };
-  "/catalog/:entryId": {
-    params: {
-      "entryId": string;
-    };
-  };
   "/password-reset": {
     params: {};
   };
@@ -35,15 +30,15 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/password-reset" | "/oauth-success";
+    page: "/" | "/signup" | "/catalog" | "/password-reset" | "/oauth-success";
   };
   "main.tsx": {
     id: "main";
-    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/password-reset" | "/oauth-success";
+    page: "/" | "/signup" | "/catalog" | "/password-reset" | "/oauth-success";
   };
   "routes/Main.tsx": {
     id: "routes/Main";
-    page: "/" | "/signup" | "/catalog" | "/catalog/:entryId" | "/password-reset" | "/oauth-success";
+    page: "/" | "/signup" | "/catalog" | "/password-reset" | "/oauth-success";
   };
   "routes/Index.tsx": {
     id: "routes/Index";
@@ -55,15 +50,7 @@ type RouteFiles = {
   };
   "routes/Catalog.tsx": {
     id: "routes/Catalog";
-    page: "/catalog" | "/catalog/:entryId";
-  };
-  "routes/CatalogIndex.tsx": {
-    id: "routes/CatalogIndex";
     page: "/catalog";
-  };
-  "routes/CatalogEntry.tsx": {
-    id: "routes/CatalogEntry";
-    page: "/catalog/:entryId";
   };
   "routes/PassReset.tsx": {
     id: "routes/PassReset";
