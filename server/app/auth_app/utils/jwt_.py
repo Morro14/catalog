@@ -20,7 +20,7 @@ class CustomJWT:
         self,
         secret=os.environ.get("JWT_SECRET"),
         content: dict = {},
-        expires_in=3600,
+        expires_in=36000,
     ):
         self.secret = secret
         self.content = content

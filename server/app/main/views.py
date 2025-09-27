@@ -1,7 +1,5 @@
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from rest_framework import views, exceptions, generics, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from main.models import Entry, Category, Tag, Folder
 from main.serializers import (
     EntrySerializer,
@@ -9,7 +7,6 @@ from main.serializers import (
     CategorySerializer,
 )
 from dotenv import load_dotenv
-import jwt, os
 from django.contrib.auth import get_user_model
 from .services.google.credentials import get_driver_service
 from .services.google.build_tree import build_tree_v2, get_files
@@ -32,31 +29,12 @@ class GoogleDriveFiles(views.APIView):
 
         service = get_driver_service(user)
         root = service.files().get(fileId="root").execute()
-        print("root", root)
         files = get_files(service)
         tree = build_tree_v2(files=files, parent_id=root["id"])
-        print("google drive api: tree:", tree)
         return Response({"files": tree})
         # except Exception as e:
         #     print("exception:", e)
         #     raise exceptions.NotFound("Failed to load data from Google Drive.", 404)
-
-
-# def jwt_auth(token):
-#     """Tries to authenticate user with id decoded from JWT token and returns the user object"""
-#     if not token:
-#         raise exceptions.AuthenticationFailed("Unauthenticated!")
-
-#     try:
-#         payload = jwt.decode(token, os.environ.get("JWT_SECRET"), "HS256")
-#     except jwt.ExpiredSignatureError:
-#         raise exceptions.AuthenticationFailed("Unauthenticated!")
-
-#     try:
-#         user = USER_MODEL.objects.get(id=payload["id"])
-#     except USER_MODEL.DoesNotExist:
-#         raise exceptions.NotFound
-#     return user
 
 
 class EntryView(views.APIView):
