@@ -10,21 +10,10 @@ const ENTRY_URL = "api-v1/catalog/entry";
 export default function CatalogEntry() {
 	const [params, setParams] = useSearchParams();
 	const entryId = params.get("entry");
-	if (!entryId) {
-		return (
-			<div className="grow">
-				<div className="bg-gray-4 h-[26px] ">
-					<div className="font-sans text-sm ml-3"></div>
-				</div>
-				<div className="text-center">
-					<h5 className="text-gray-400 font-mono">
-						Choose a folder or an entry to display
-					</h5>
-				</div>
-			</div>
-		);
-	}
-	const fetchedResults = useFetchV3(ENTRY_URL + "/" + entryId);
+
+	const fetchedResults = useFetchV3(
+		!entryId ? undefined : ENTRY_URL + "/" + entryId
+	);
 
 	const fetchedDataCheck =
 		fetchedResults && fetchedResults.fetchedData ? true : false;
@@ -35,23 +24,12 @@ export default function CatalogEntry() {
 		:	undefined;
 
 	const loading = fetchedResults?.loading;
-	if (loading) {
-		return (
-			<div className="grow">
-				<div className="bg-gray-4 h-[26px] ">
-					<div className="font-sans text-sm ml-3"></div>
-				</div>
-				<div className="text-center">
-					<h5 className="text-gray-400 font-mono">Loading...</h5>
-				</div>
-			</div>
-		);
-	}
+
 	const tagColors = entryData ? getTagColor(entryData.tags) : undefined;
-	console.log("fetch results", fetchedResults);
-	console.log(loading);
+	console.log("fetch results:", fetchedResults);
+	console.log("loading status:", loading);
 	return (
-		!fetchedResults ?
+		!fetchedResults.fetchedData ?
 			<div className="grow">
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3"></div>
@@ -60,6 +38,15 @@ export default function CatalogEntry() {
 					<h5 className="text-gray-400 font-mono">
 						Choose a folder or an entry to display
 					</h5>
+				</div>
+			</div>
+		: loading ?
+			<div className="grow">
+				<div className="bg-gray-4 h-[26px] ">
+					<div className="font-sans text-sm ml-3"></div>
+				</div>
+				<div className="text-center">
+					<h5 className="text-gray-400 font-mono">Loading...</h5>
 				</div>
 			</div>
 		: fetchedResults.fetchedData.status !== 200 ?
