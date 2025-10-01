@@ -9,6 +9,7 @@ class CustomUserManager(BaseUserManager):
         user = self.model(email=email_, **extra_fields)
         print("user manager: setting password:", password)
         user.set_password(password)
+        user.full_clean()
         user.save()
         return user
 

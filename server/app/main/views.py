@@ -13,6 +13,7 @@ from .services.google.build_tree import build_tree_v2, get_files
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import EntryFilter
+from auth_app.serializers import UserSerializer
 
 load_dotenv()
 
@@ -98,4 +99,11 @@ class TreeView(views.APIView):
 
         tree["root"] = get_row(root)
         response = Response(data={"tree": tree})
+        return response
+    
+class UserServiceInfoView(views.APIView):
+    def get(self, request):
+        user = self.request.user
+        serializer = UserSerializer(user)
+        response = Response(data=serializer.data['services'])
         return response

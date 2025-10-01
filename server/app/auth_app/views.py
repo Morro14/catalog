@@ -61,6 +61,7 @@ class GoogleLoginView(views.APIView):
     permission_classes = []
 
     def get(self, request):
+        print('variables:', settings.GOOGLE_CLIENT_ID, settings.GOOGLE_CLIENT_SECRET)
         code = request.GET.get("code")
         token_url = "https://oauth2.googleapis.com/token"
         data = {
@@ -72,7 +73,7 @@ class GoogleLoginView(views.APIView):
         }
         r = requests.post(token_url, data=data)
         token_data = r.json()
-        print("token_data", token_data)
+        print("token_data", r)
         access_token = token_data["access_token"]
         refresh_token = token_data["refresh_token"]
 
@@ -84,6 +85,7 @@ class GoogleLoginView(views.APIView):
         user, created = User.objects.get_or_create(email=email)
         user.google_access_token = access_token
         user.google_refresh_token = refresh_token
+        user.add_service('google')
         user.save()
         temp_token = CustomJWT(content={"id": str(user.id)}, expires_in=60).get_token()
         response = HttpResponseRedirect(

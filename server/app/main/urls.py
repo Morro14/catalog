@@ -1,5 +1,5 @@
 from django.urls import path
-
+from .views import UserServiceInfoView
 
 from main.views import (
     TreeView,
@@ -13,4 +13,6 @@ urlpatterns = [
     path("google/get-files", GoogleDriveFiles.as_view()),
     path("entry/<int:pk>", EntryView.as_view()),
     path("entries/", EntryListView.as_view()),
+    path("user-service-info", UserServiceInfoView.as_view()),
+
 ]

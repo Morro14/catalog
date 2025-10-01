@@ -1,5 +1,6 @@
 import requests
 from django.test import TestCase as TestCaseDj
+from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from .utils.jwt_ import CustomJWT
 import os
@@ -7,7 +8,7 @@ from dotenv import load_dotenv
 from .loggers import UserLogger
 from django_rest_passwordreset.models import ResetPasswordToken
 from unittest import TestCase
-
+from auth_app.utils.jwt_ import CustomJWTTest
 
 logger = UserLogger("users.log")
 
@@ -17,28 +18,22 @@ USER_MODEL = get_user_model()
 URL_BASE = "http://127.0.0.1:8000/auth/"
 
 
-class AuthTest(TestCaseDj):
-    def test_register(self):
-        r = requests.post(
-            "http://127.0.0.1:8000/auth/register",
-            data={"email": "email2@test.com", "password": "qwer"},
-        )
+class ServiceValidateTest(TestCaseDj):
+    def test_validate(self):
+        user = USER_MODEL.objects.create_user(email='test@email.com', password="password123")
+        user.add_service('google')
+        print(user.services)
 
-        print(r.content)
-
-    def test_login(self):
-        r = requests.post(
-            url=URL_BASE + "login",
-            data={"email": "email2@test.com", "password": "qwer"},
-        )
-        print(r.content)
-
-    def test_logout(self):
-        jwt = CustomJWT(os.environ.get("JWT_SECRET")).get_token()
-
-        r = requests.get(cookies={"jwt": jwt}, url=URL_BASE + "logout")
-        print(r.cookies.get("jwt"), r.content)
-
+class UserInfoTest(APITestCase):
+    def test_get_info(self):
+        user = USER_MODEL.objects.create_user(email='test@email.com', password="password123")
+        user.add_service('google')
+        user_token = CustomJWTTest(
+            content={"id": str(user.id)},
+        ).get_token()
+        self.client.cookies["jwt"] = user_token
+        response = self.client.get(path='http://127.0.0.1:8000/api-v1/catalog/user-service-info')
+        print(response.json())
 
 class PassResetTest(TestCase):
 
