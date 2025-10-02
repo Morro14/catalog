@@ -105,5 +105,6 @@ class UserServiceInfoView(views.APIView):
     def get(self, request):
         user = self.request.user
         serializer = UserSerializer(user)
+        # print('serializer data',serializer.data)
         response = Response(data=serializer.data['services'])
         return response

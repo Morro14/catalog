@@ -33,7 +33,7 @@ class UserInfoTest(APITestCase):
         ).get_token()
         self.client.cookies["jwt"] = user_token
         response = self.client.get(path='http://127.0.0.1:8000/api-v1/catalog/user-service-info')
-        print(response.json())
+        print('test response',response.json())
 
 class PassResetTest(TestCase):
 

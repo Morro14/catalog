@@ -36,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
-    
+
     def get_default_services():
         return {"service_names": [], "last_used_service": ""}
     services: ServicesValue = models.JSONField(validators=[service_name_validator], default=get_default_services)
@@ -45,6 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     def add_service(self, service):
+        # print('add service: current services:', self.services, type(self.services))
         '''Add a service name to the list of services used by the user. Available services are listed in settigs under ALLOWED_SERVICES.'''
         if service not in self.services["service_names"]:
             self.services['service_names'].append(service)
