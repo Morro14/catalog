@@ -105,6 +105,8 @@ const route0 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   default: root
 }, Symbol.toStringTag, { value: "Module" }));
 const serverURL = "http://127.0.0.1:8000/";
+const SERVER_URL$1 = "http://127.0.0.1:8000";
+console.log(SERVER_URL$1);
 axios.defaults.withCredentials = true;
 const axiosInstance = axios.create({
   baseURL: serverURL,
@@ -678,8 +680,54 @@ function LeftPannel({ treeData }) {
     ] })
   ] });
 }
+function useFetchV3(url) {
+  const [loading, setLoading] = useState(true);
+  const [fetchedData, setFetchedData] = useState(void 0);
+  useEffect(() => {
+    if (!url) {
+      setLoading(false);
+      return;
+    }
+    if (!loading) {
+      return;
+    }
+    console.log("sending request");
+    axiosInstance.get(url, { timeout: 3e4 }).then((r) => {
+      setFetchedData({ data: r.data, status: r.status, message: "success" });
+      setLoading(false);
+    }).catch((r) => {
+      setFetchedData({ data: r.data, status: r.status, message: r.message });
+      setLoading(false);
+    });
+  }, [url]);
+  return { validParams: url, fetchedData, loading };
+}
+function Loading() {
+  const [dots, setDots] = useState("");
+  const [dotsLength, setDotsLength] = useState(0);
+  console.log(dots.length);
+  setInterval(
+    () => {
+      setDotsLength(dotsLength + 1);
+      setDots(dots.length < 3 ? dots + "." : "");
+    },
+    710
+    // [dots.length < 3 ? dots + "." : ""]
+  );
+  return /* @__PURE__ */ jsx("div", { className: "flex items-center", children: /* @__PURE__ */ jsxs("div", { className: "text-gray-400 font-mono ", children: [
+    "Loading",
+    dots
+  ] }) });
+}
+const USER_SERVICE_INFO_URL = "api-v1/catalog/user-service-info";
 function ServiceNav() {
-  return /* @__PURE__ */ jsx("div", { className: "" });
+  const [params, setParams] = useSearchParams();
+  params.get("service");
+  const { fetchedData, loading } = useFetchV3(
+    USER_SERVICE_INFO_URL
+  );
+  console.log("service nav", fetchedData);
+  return loading ? /* @__PURE__ */ jsx(Loading, {}) : /* @__PURE__ */ jsx(Loading, {});
 }
 function Fallback({ message, link = "", linkText = "" }) {
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center items-center mt-10", children: [
@@ -694,36 +742,77 @@ function Fallback({ message, link = "", linkText = "" }) {
     )
   ] });
 }
-function useFetchV3(url) {
-  const [loading, setLoading] = useState("idle");
-  const [data, setData] = useState(void 0);
-  console.log("loading", loading);
-  useEffect(() => {
-    console.log("sending request");
-    axiosInstance.get(url, { timeout: 3e4 }).then((r) => {
-      console.log("service response:", r);
-      setData({ data: r.data, status: r.status, message: "success" });
-      setLoading("idle");
-    }).catch((r) => {
-      setData({ data: r.data, status: r.status, message: r.message });
-      setLoading("idle");
-    });
-  }, [url]);
-  return { data, loading };
+function Tag({ name, color }) {
+  console.log("tag name:", name, "color:", color);
+  const bgColor = `var(--color-tag-${color})`;
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      style: { backgroundColor: bgColor },
+      className: `rounded-sm px-1.5`,
+      children: name
+    }
+  );
 }
-const ENTRY_URL = "api-v1/catalog/entry";
+const getTagColor = (tags) => {
+  const tagPallete = ["pink", "blue", "green", "orange"];
+  const tagColors = tags.map((t, i) => {
+    return tagPallete[i % tagPallete.length];
+  });
+  console.log("gen colors", tagColors);
+  return tagColors;
+};
 function CatalogEntry() {
   const [params, setParams] = useSearchParams();
   const entryId = params.get("entry");
-  if (!entryId) {
-    return /* @__PURE__ */ jsxs("div", { className: "grow", children: [
-      /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3" }) }),
-      /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsx("h5", { className: "text-gray-400 font-mono", children: "Choose a folder or an entry to display" }) })
-    ] });
-  }
-  const fetchData = useFetchV3(ENTRY_URL + "/" + entryId);
-  const loading = fetchData.loading;
-  return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx("div", { children: loading }) });
+  const fetchedResults = useFetchV3(entryId);
+  const entryData = fetchedResults.fetchedData && fetchedResults.fetchedData.status === 200 ? fetchedResults.fetchedData.data : void 0;
+  const loading = fetchedResults?.loading;
+  const tagColors = entryData ? getTagColor(entryData.tags) : void 0;
+  return !fetchedResults.validParams ? /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3" }) }),
+    /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsx("h5", { className: "text-gray-400 font-mono", children: "Choose a folder or an entry to display" }) })
+  ] }) : loading ? /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3" }) }),
+    /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsx("h5", { className: "text-gray-400 font-mono", children: "Loading..." }) })
+  ] }) : !entryData ? /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3" }) }),
+    /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsx("h5", { className: "text-gray-400 font-mono", children: /* @__PURE__ */ jsx(
+      Fallback,
+      {
+        message: Math.floor(fetchedResults.fetchedData.status / 100) === 5 ? "Could not fetch the data." : "Something went wrong."
+      }
+    ) }) })
+  ] }) : /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3", children: entryData.path }) }),
+    /* @__PURE__ */ jsxs("div", { className: "px-[38px] py-[21px]", children: [
+      /* @__PURE__ */ jsx("div", { className: "font-sans font-normal text-2xl", children: entryData.name }),
+      /* @__PURE__ */ jsx("p", { className: "font-sans mt-4", children: entryData.context_description }),
+      /* @__PURE__ */ jsx("div", { className: "h-[1px] bg-gray-4 mt-4" }),
+      /* @__PURE__ */ jsxs("div", { className: "flex justify-between font-mono text-xs mt-1", children: [
+        /* @__PURE__ */ jsx(Link, { to: "catalog/entry/edit", children: "edit" }),
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
+          /* @__PURE__ */ jsx("div", { children: "tags: " }),
+          /* @__PURE__ */ jsx("div", { className: "flex gap-1", children: entryData.tags.map((tag, i) => /* @__PURE__ */ jsx(
+            Tag,
+            {
+              name: tag,
+              color: tagColors[i]
+            },
+            `tag-${tag}`
+          )) })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          "category: ",
+          entryData.category
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          "date: ",
+          entryData.context_date
+        ] })
+      ] })
+    ] })
+  ] });
 }
 const TREE_URL = "api-v1/catalog/tree";
 function shouldRevalidate({
@@ -781,7 +870,10 @@ const Catalog = UNSAFE_withComponentProps(function Catalog2({
     className: "w-full min-h-screen flex",
     children: [/* @__PURE__ */ jsx(LeftPannel, {
       treeData: loaderData.treeData
-    }), /* @__PURE__ */ jsx(CatalogEntry, {}), /* @__PURE__ */ jsxs("div", {
+    }), /* @__PURE__ */ jsx("div", {
+      className: "grow max-w-4/9",
+      children: /* @__PURE__ */ jsx(CatalogEntry, {})
+    }), /* @__PURE__ */ jsxs("div", {
       className: "grow max-w-4/9",
       children: [/* @__PURE__ */ jsx("div", {
         className: "bg-gray-3 h-[26px]"
@@ -880,7 +972,7 @@ const route7 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   clientLoader,
   default: OauthSuccess
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-DWlxrz2E.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/root-AU-_aPMl.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": ["/assets/root-D1weL3Jn.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "main": { "id": "main", "parentId": "root", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/main-C8DL6AVH.js", "imports": ["/assets/main-CZOfJWF6.js", "/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Main": { "id": "routes/Main", "parentId": "main", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Main-D2irBZNj.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Index": { "id": "routes/Index", "parentId": "routes/Main", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Index-LsLT6RXF.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CZOfJWF6.js"], "css": ["/assets/Index-bFu_TAjp.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Signup": { "id": "routes/Signup", "parentId": "routes/Main", "path": "signup", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Signup-kqdH-1vM.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Catalog": { "id": "routes/Catalog", "parentId": "routes/Main", "path": "catalog", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Catalog-BVi7vNaN.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CZOfJWF6.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/PassReset": { "id": "routes/PassReset", "parentId": "routes/Main", "path": "password-reset", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/PassReset-CZrRLKy3.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CZOfJWF6.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/OauthSuccess": { "id": "routes/OauthSuccess", "parentId": "routes/Main", "path": "oauth-success", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/OauthSuccess-vvx1uXwK.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CZOfJWF6.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 } }, "url": "/assets/manifest-8ea1ab39.js", "version": "8ea1ab39", "sri": void 0 };
+const serverManifest = { "entry": { "module": "/assets/entry.client-DWlxrz2E.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/root-AU-_aPMl.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": ["/assets/root-D1weL3Jn.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "main": { "id": "main", "parentId": "root", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/main-Cn7MzuFp.js", "imports": ["/assets/main-CH5eFCjp.js", "/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Main": { "id": "routes/Main", "parentId": "main", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Main-D2irBZNj.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Index": { "id": "routes/Index", "parentId": "routes/Main", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Index-CWEPpfO0.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": ["/assets/Index-bFu_TAjp.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Signup": { "id": "routes/Signup", "parentId": "routes/Main", "path": "signup", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Signup-kqdH-1vM.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Catalog": { "id": "routes/Catalog", "parentId": "routes/Main", "path": "catalog", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Catalog-c0TeLHoy.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/PassReset": { "id": "routes/PassReset", "parentId": "routes/Main", "path": "password-reset", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/PassReset-CzxcR5KZ.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/OauthSuccess": { "id": "routes/OauthSuccess", "parentId": "routes/Main", "path": "oauth-success", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/OauthSuccess-Dd3uhGus.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 } }, "url": "/assets/manifest-a89431ca.js", "version": "a89431ca", "sri": void 0 };
 const assetsBuildDirectory = "build/client";
 const basename = "/";
 const future = { "v8_middleware": false, "unstable_optimizeDeps": false, "unstable_splitRouteModules": false, "unstable_subResourceIntegrity": false, "unstable_viteEnvironmentApi": false };

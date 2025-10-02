@@ -11,26 +11,19 @@ export default function CatalogEntry() {
 	const [params, setParams] = useSearchParams();
 	const entryId = params.get("entry");
 
-	const fetchedResults = useFetchV3(
-		!entryId ? undefined : ENTRY_URL + "/" + entryId
-	);
-
-	const fetchedDataCheck =
-		fetchedResults && fetchedResults.fetchedData ? true : false;
+	const fetchedResults = useFetchV3(ENTRY_URL + "/" + entryId);
 
 	const entryData =
-		fetchedDataCheck && fetchedResults.fetchedData.status === 200 ?
+		fetchedResults.fetchedData && fetchedResults.fetchedData.status === 200 ?
 			fetchedResults.fetchedData.data
 		:	undefined;
 
 	const loading = fetchedResults?.loading;
 
 	const tagColors = entryData ? getTagColor(entryData.tags) : undefined;
-	console.log("fetch results:", fetchedResults);
-	console.log("loading status:", loading);
 	return (
-		!fetchedResults.fetchedData ?
-			<div className="grow">
+		!fetchedResults.validParams ?
+			<div>
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3"></div>
 				</div>
@@ -41,7 +34,7 @@ export default function CatalogEntry() {
 				</div>
 			</div>
 		: loading ?
-			<div className="grow">
+			<div>
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3"></div>
 				</div>
@@ -49,8 +42,8 @@ export default function CatalogEntry() {
 					<h5 className="text-gray-400 font-mono">Loading...</h5>
 				</div>
 			</div>
-		: fetchedResults.fetchedData.status !== 200 ?
-			<div className="grow">
+		: !entryData ?
+			<div>
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3"></div>
 				</div>
@@ -58,15 +51,15 @@ export default function CatalogEntry() {
 					<h5 className="text-gray-400 font-mono">
 						<Fallback
 							message={
-								Math.floor(fetchedResults.fetchedData.status / 100) === 5 ?
-									"Could not fetch the data."
+								fetchedResults.fetchedData.status === 404 ?
+									"Data not found."
 								:	"Something went wrong."
 							}
 						></Fallback>
 					</h5>
 				</div>
 			</div>
-		:	<div className="grow max-w-4/9">
+		:	<div>
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3">{entryData.path}</div>
 				</div>

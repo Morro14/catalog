@@ -7,10 +7,10 @@ import type { ApiResponse } from "~/types/loader_data";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
 import Fallback from "~/components/Fallback";
 import CatalogEntry from "./CatalogEntry";
+import CatalogFallback from "~/components/catalog/CatalogFallback";
+import fallbackWrapper from "~/utils/fallbackWrapper";
 
 const TREE_URL = "api-v1/catalog/tree";
-const ENTRY_URL = "api-v1/catalog/entry";
-const GOOGLE_DRIVE_URL = "api-v1/catalog/google/get-files";
 
 interface CatalogLoaderData {
 	treeData: ApiResponse<any>;
@@ -22,11 +22,6 @@ export function shouldRevalidate({
 	currentUrl,
 	nextUrl,
 }: ShouldRevalidateFunctionArgs) {
-	// console.log(
-	// 	"shouldRevalidate",
-	// 	currentUrl.pathname.startsWith("/catalog"),
-	// 	nextUrl.pathname.startsWith("/catalog")
-	// );
 	return !(
 		currentUrl.pathname.startsWith("/catalog") &&
 		nextUrl.pathname.startsWith("/catalog")
@@ -47,29 +42,19 @@ export async function clientLoader({
 
 	return { treeData };
 }
-
 export function HydrateFallback() {
-	return (
-		<div className="w-full min-h-screen flex">
-			<LeftPannel treeData={undefined}></LeftPannel>
-			<div className="grow max-w-4/9">
-				<div className="bg-gray-3 h-[26px]"></div>
-				<Fallback message={"loading..."}></Fallback>
-			</div>
-			<div className="grow max-w-4/9">
-				<div className="bg-gray-3 h-[26px]"></div>
-				<Fallback message={"loading..."}></Fallback>
-			</div>
-		</div>
-	);
+	return fallbackWrapper(CatalogFallback);
 }
 
 export default function Catalog({ loaderData }: Route.ComponentProps) {
+	const email = localStorage.getItem("email");
+	console.log("email", email);
 	return loaderData.treeData.status === 200 ?
 			<div className="w-full min-h-screen flex">
 				<LeftPannel treeData={loaderData.treeData}></LeftPannel>
-				<CatalogEntry></CatalogEntry>
-
+				<div className="grow max-w-4/9">
+					<CatalogEntry></CatalogEntry>
+				</div>
 				<div className="grow max-w-4/9">
 					<div className="bg-gray-3 h-[26px]"></div>
 					<ServiceNav></ServiceNav>

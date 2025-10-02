@@ -30,7 +30,7 @@ export default function Login() {
 				.then((r) => {
 					console.log("login:", r.status);
 					if (r.status === 200) {
-						localStorage.setItem("username", email);
+						localStorage.setItem("email", email);
 						nav("/catalog");
 					} else {
 						setErrors({
