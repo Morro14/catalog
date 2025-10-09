@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import { axiosInstance } from "~/main";
 
-export function useFetchV3(url: string) {
+export function useFetchV3(url: string, valid = true, timeout = 0) {
 	const [loading, setLoading] = useState(true);
 	const [fetchedData, setFetchedData] = useState(undefined);
 
 	useEffect(() => {
-		if (!url) {
+		if (!valid) {
 			setLoading(false);
 			return;
 		}
 		if (!loading) {
 			return;
 		}
-
-		console.log("sending request");
+		// console.log("hook url", url);
+		// console.log("sending request");
 
 		axiosInstance
-			.get(url, { timeout: 30000 })
+			.get(url, { timeout: timeout })
 			.then((r) => {
 				setFetchedData({ data: r.data, status: r.status, message: "success" });
 
@@ -28,5 +28,5 @@ export function useFetchV3(url: string) {
 				setLoading(false);
 			});
 	}, [url]);
-	return { validParams: url, fetchedData, loading };
+	return { validParams: valid, fetchedData, loading };
 }

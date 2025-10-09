@@ -117,7 +117,7 @@ axios.interceptors.response.use((r) => {
   const authExceptionsStatuses = [401, 403];
   if (authExceptionsStatuses.includes(r.status)) {
     console.log(r);
-    localStorage.removeItem("username");
+    localStorage.removeItem("email");
   }
   console.log("response", r);
   return r;
@@ -253,7 +253,7 @@ function Login() {
       axios.post(loginURL, { email, password }).then((r) => {
         console.log("login:", r.status);
         if (r.status === 200) {
-          localStorage.setItem("username", email);
+          localStorage.setItem("email", email);
           nav("/catalog");
         } else {
           setErrors({
@@ -680,19 +680,58 @@ function LeftPannel({ treeData }) {
     ] })
   ] });
 }
-function useFetchV3(url) {
+function Fallback({
+  message,
+  link = void 0,
+  linkText = void 0,
+  onClick = void 0
+}) {
+  console.log(link, linkText, onClick);
+  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center items-center mt-10", children: [
+    /* @__PURE__ */ jsx("div", { className: "text-gray-2 font-semibold", children: message }),
+    link ? /* @__PURE__ */ jsx(
+      Link,
+      {
+        to: link,
+        className: "font-light underline",
+        children: linkText
+      }
+    ) : onClick ? /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "font-light underline cursor-pointer",
+        onClick,
+        children: linkText
+      }
+    ) : ""
+  ] });
+}
+function Loading() {
+  const [dots, setDots] = useState(".");
+  const [intervalId, setIntervalId] = useState();
+  const dotsAdd = dots.length < 3 ? dots + "." : ".";
+  setTimeout(
+    setDots,
+    710,
+    dotsAdd
+  );
+  return /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "text-gray-400 font-mono w-[100px]", children: [
+    "Loading",
+    dots
+  ] }) });
+}
+function useFetchV3(url, valid = true, timeout = 1e4) {
   const [loading, setLoading] = useState(true);
   const [fetchedData, setFetchedData] = useState(void 0);
   useEffect(() => {
-    if (!url) {
+    if (!valid) {
       setLoading(false);
       return;
     }
     if (!loading) {
       return;
     }
-    console.log("sending request");
-    axiosInstance.get(url, { timeout: 3e4 }).then((r) => {
+    axiosInstance.get(url, { timeout }).then((r) => {
       setFetchedData({ data: r.data, status: r.status, message: "success" });
       setLoading(false);
     }).catch((r) => {
@@ -700,47 +739,41 @@ function useFetchV3(url) {
       setLoading(false);
     });
   }, [url]);
-  return { validParams: url, fetchedData, loading };
+  return { validParams: valid, fetchedData, loading };
 }
-function Loading() {
-  const [dots, setDots] = useState("");
-  const [dotsLength, setDotsLength] = useState(0);
-  console.log(dots.length);
-  setInterval(
-    () => {
-      setDotsLength(dotsLength + 1);
-      setDots(dots.length < 3 ? dots + "." : "");
-    },
-    710
-    // [dots.length < 3 ? dots + "." : ""]
+const GOOGLE_DRIVE_URL = "api-v1/catalog/google/get-files";
+function GoogleDriveView() {
+  const { fetchedData, loading } = useFetchV3(
+    GOOGLE_DRIVE_URL,
+    true
+    // 120000
   );
-  return /* @__PURE__ */ jsx("div", { className: "flex items-center", children: /* @__PURE__ */ jsxs("div", { className: "text-gray-400 font-mono ", children: [
-    "Loading",
-    dots
-  ] }) });
+  const data = fetchedData && fetchedData.status === 200 ? fetchedData.data : void 0;
+  console.log("google data", data);
+  return data ? /* @__PURE__ */ jsx("div", { children: "Google Drive View" }) : loading ? /* @__PURE__ */ jsx(Loading, {}) : fetchedData.status === 500 ? /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
+    Fallback,
+    {
+      message: "You need to complete Google authorization.",
+      linkText: "Authorize with Google.",
+      onClick: startGoogleAuthFlow
+    }
+  ) }) : /* @__PURE__ */ jsx(
+    Fallback,
+    {
+      message: "Could not get the files from Google Drive."
+    }
+  );
 }
 const USER_SERVICE_INFO_URL = "api-v1/catalog/user-service-info";
 function ServiceNav() {
   const [params, setParams] = useSearchParams();
-  params.get("service");
+  const serviceQuery = params.get("service");
   const { fetchedData, loading } = useFetchV3(
-    USER_SERVICE_INFO_URL
+    !serviceQuery ? USER_SERVICE_INFO_URL : void 0
   );
+  const service = fetchedData ? serviceQuery || fetchedData.data.last_used_service : void 0;
   console.log("service nav", fetchedData);
-  return loading ? /* @__PURE__ */ jsx(Loading, {}) : /* @__PURE__ */ jsx(Loading, {});
-}
-function Fallback({ message, link = "", linkText = "" }) {
-  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center items-center mt-10", children: [
-    /* @__PURE__ */ jsx("div", { className: "text-xl font-semibold text-gray-2", children: message }),
-    /* @__PURE__ */ jsx(
-      Link,
-      {
-        to: link,
-        className: "font-light underline",
-        children: linkText
-      }
-    )
-  ] });
+  return loading ? /* @__PURE__ */ jsx(Loading, {}) : service === "google" ? /* @__PURE__ */ jsx(GoogleDriveView, {}) : /* @__PURE__ */ jsx(GoogleDriveView, {});
 }
 function Tag({ name, color }) {
   console.log("tag name:", name, "color:", color);
@@ -762,10 +795,14 @@ const getTagColor = (tags) => {
   console.log("gen colors", tagColors);
   return tagColors;
 };
+const ENTRY_URL = "api-v1/catalog/entry";
 function CatalogEntry() {
   const [params, setParams] = useSearchParams();
   const entryId = params.get("entry");
-  const fetchedResults = useFetchV3(entryId);
+  const fetchedResults = useFetchV3(
+    ENTRY_URL + "/" + entryId,
+    Boolean(entryId)
+  );
   const entryData = fetchedResults.fetchedData && fetchedResults.fetchedData.status === 200 ? fetchedResults.fetchedData.data : void 0;
   const loading = fetchedResults?.loading;
   const tagColors = entryData ? getTagColor(entryData.tags) : void 0;
@@ -777,12 +814,12 @@ function CatalogEntry() {
     /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsx("h5", { className: "text-gray-400 font-mono", children: "Loading..." }) })
   ] }) : !entryData ? /* @__PURE__ */ jsxs("div", { children: [
     /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3" }) }),
-    /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsx("h5", { className: "text-gray-400 font-mono", children: /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx(
       Fallback,
       {
-        message: Math.floor(fetchedResults.fetchedData.status / 100) === 5 ? "Could not fetch the data." : "Something went wrong."
+        message: fetchedResults.fetchedData.status === 404 ? "Data not found." : "Something went wrong."
       }
-    ) }) })
+    )
   ] }) : /* @__PURE__ */ jsxs("div", { children: [
     /* @__PURE__ */ jsx("div", { className: "bg-gray-4 h-[26px] ", children: /* @__PURE__ */ jsx("div", { className: "font-sans text-sm ml-3", children: entryData.path }) }),
     /* @__PURE__ */ jsxs("div", { className: "px-[38px] py-[21px]", children: [
@@ -814,6 +851,29 @@ function CatalogEntry() {
     ] })
   ] });
 }
+function CatalogFallback() {
+  return /* @__PURE__ */ jsxs("div", { className: "w-full min-h-screen flex", children: [
+    /* @__PURE__ */ jsx(LeftPannel, { treeData: void 0 }),
+    /* @__PURE__ */ jsx("div", { className: "grow max-w-4/9", children: /* @__PURE__ */ jsx(CatalogEntry, {}) }),
+    /* @__PURE__ */ jsxs("div", { className: "grow max-w-4/9", children: [
+      /* @__PURE__ */ jsx("div", { className: "bg-gray-3 h-[26px]" }),
+      /* @__PURE__ */ jsx(ServiceNav, {})
+    ] })
+  ] });
+}
+function fallbackWrapper(component) {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  if (!hydrated) {
+    return /* @__PURE__ */ jsx(Loading, {});
+  }
+  const email = localStorage.getItem("email");
+  console.log("fallback wrapper", email);
+  if (email) {
+    return component;
+  }
+  return /* @__PURE__ */ jsx(Loading, {});
+}
 const TREE_URL = "api-v1/catalog/tree";
 function shouldRevalidate({
   currentUrl,
@@ -842,30 +902,13 @@ async function clientLoader$1({
   };
 }
 const HydrateFallback = UNSAFE_withHydrateFallbackProps(function HydrateFallback2() {
-  return /* @__PURE__ */ jsxs("div", {
-    className: "w-full min-h-screen flex",
-    children: [/* @__PURE__ */ jsx(LeftPannel, {
-      treeData: void 0
-    }), /* @__PURE__ */ jsxs("div", {
-      className: "grow max-w-4/9",
-      children: [/* @__PURE__ */ jsx("div", {
-        className: "bg-gray-3 h-[26px]"
-      }), /* @__PURE__ */ jsx(Fallback, {
-        message: "loading..."
-      })]
-    }), /* @__PURE__ */ jsxs("div", {
-      className: "grow max-w-4/9",
-      children: [/* @__PURE__ */ jsx("div", {
-        className: "bg-gray-3 h-[26px]"
-      }), /* @__PURE__ */ jsx(Fallback, {
-        message: "loading..."
-      })]
-    })]
-  });
+  return fallbackWrapper(CatalogFallback);
 });
 const Catalog = UNSAFE_withComponentProps(function Catalog2({
   loaderData
 }) {
+  const email = localStorage.getItem("email");
+  console.log("email", email);
   return loaderData.treeData.status === 200 ? /* @__PURE__ */ jsxs("div", {
     className: "w-full min-h-screen flex",
     children: [/* @__PURE__ */ jsx(LeftPannel, {
@@ -972,7 +1015,7 @@ const route7 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   clientLoader,
   default: OauthSuccess
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-DWlxrz2E.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/root-AU-_aPMl.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": ["/assets/root-D1weL3Jn.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "main": { "id": "main", "parentId": "root", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/main-Cn7MzuFp.js", "imports": ["/assets/main-CH5eFCjp.js", "/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Main": { "id": "routes/Main", "parentId": "main", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Main-D2irBZNj.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Index": { "id": "routes/Index", "parentId": "routes/Main", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Index-CWEPpfO0.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": ["/assets/Index-bFu_TAjp.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Signup": { "id": "routes/Signup", "parentId": "routes/Main", "path": "signup", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Signup-kqdH-1vM.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Catalog": { "id": "routes/Catalog", "parentId": "routes/Main", "path": "catalog", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Catalog-c0TeLHoy.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/PassReset": { "id": "routes/PassReset", "parentId": "routes/Main", "path": "password-reset", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/PassReset-CzxcR5KZ.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/OauthSuccess": { "id": "routes/OauthSuccess", "parentId": "routes/Main", "path": "oauth-success", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/OauthSuccess-Dd3uhGus.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-CH5eFCjp.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 } }, "url": "/assets/manifest-a89431ca.js", "version": "a89431ca", "sri": void 0 };
+const serverManifest = { "entry": { "module": "/assets/entry.client-DWlxrz2E.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/root-cBmKb_03.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": ["/assets/root-QEkosO0F.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "main": { "id": "main", "parentId": "root", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/main-cnrnGvir.js", "imports": ["/assets/main-DouJoBIA.js", "/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Main": { "id": "routes/Main", "parentId": "main", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Main-D2irBZNj.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Index": { "id": "routes/Index", "parentId": "routes/Main", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Index-0R8UW7tS.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-DouJoBIA.js", "/assets/authflow-nbCEZs_J.js"], "css": ["/assets/Index-bFu_TAjp.css"], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Signup": { "id": "routes/Signup", "parentId": "routes/Main", "path": "signup", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Signup-kqdH-1vM.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/Catalog": { "id": "routes/Catalog", "parentId": "routes/Main", "path": "catalog", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/Catalog-B7WPHCI4.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-DouJoBIA.js", "/assets/authflow-nbCEZs_J.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/PassReset": { "id": "routes/PassReset", "parentId": "routes/Main", "path": "password-reset", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/PassReset-BsH4gJ5D.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-DouJoBIA.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/OauthSuccess": { "id": "routes/OauthSuccess", "parentId": "routes/Main", "path": "oauth-success", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": true, "hasClientMiddleware": false, "hasErrorBoundary": false, "module": "/assets/OauthSuccess-CjoAVrzq.js", "imports": ["/assets/chunk-B7RQU5TL-BHJdDF5G.js", "/assets/main-DouJoBIA.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 } }, "url": "/assets/manifest-c73edc78.js", "version": "c73edc78", "sri": void 0 };
 const assetsBuildDirectory = "build/client";
 const basename = "/";
 const future = { "v8_middleware": false, "unstable_optimizeDeps": false, "unstable_splitRouteModules": false, "unstable_subResourceIntegrity": false, "unstable_viteEnvironmentApi": false };

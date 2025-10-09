@@ -11,7 +11,10 @@ export default function CatalogEntry() {
 	const [params, setParams] = useSearchParams();
 	const entryId = params.get("entry");
 
-	const fetchedResults = useFetchV3(ENTRY_URL + "/" + entryId);
+	const fetchedResults = useFetchV3(
+		ENTRY_URL + "/" + entryId,
+		Boolean(entryId)
+	);
 
 	const entryData =
 		fetchedResults.fetchedData && fetchedResults.fetchedData.status === 200 ?
@@ -47,17 +50,14 @@ export default function CatalogEntry() {
 				<div className="bg-gray-4 h-[26px] ">
 					<div className="font-sans text-sm ml-3"></div>
 				</div>
-				<div className="text-center">
-					<h5 className="text-gray-400 font-mono">
-						<Fallback
-							message={
-								fetchedResults.fetchedData.status === 404 ?
-									"Data not found."
-								:	"Something went wrong."
-							}
-						></Fallback>
-					</h5>
-				</div>
+
+				<Fallback
+					message={
+						fetchedResults.fetchedData.status === 404 ?
+							"Data not found."
+						:	"Something went wrong."
+					}
+				></Fallback>
 			</div>
 		:	<div>
 				<div className="bg-gray-4 h-[26px] ">

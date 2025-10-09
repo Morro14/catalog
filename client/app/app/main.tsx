@@ -7,7 +7,7 @@ console.log(SERVER_URL);
 axios.defaults.withCredentials = true;
 export const axiosInstance = axios.create({
 	baseURL: serverURL,
-	timeout: 10000,
+	// timeout: 10000,
 });
 axios.interceptors.response.use((r) => {
 	console.log("interseptor");
