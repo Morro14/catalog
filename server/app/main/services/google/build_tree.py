@@ -7,10 +7,11 @@ def get_files(service):
             service.files()
             .list(
                 pageSize=1000,
-                q=f"trashed=false",
-                fields="nextPageToken, files(id, name, mimeType, thumbnailLink, iconLink, webViewLink, parents)",
+                q="trashed = false and 'me' in owners",
+                fields="nextPageToken, files(id, mimeType, name, parents, ownedByMe)",
+                # fields="nextPageToken, files(id, name, mimeType, thumbnailLink, iconLink, webViewLink, parents)",
                 corpora="user",
-                # includeItemsFromAllDrives=True,
+                # includeItemsFromAllDrives=False,
                 # supportsAllDrives=True,
                 pageToken=page_token,
             )
@@ -28,6 +29,7 @@ tree = []
 
 def build_tree_v2(files, parent_id):
     """Recursevly builds a file tree structure."""
+    print('building tree')
 
     def sort_files(row):
         folders = []
@@ -55,6 +57,6 @@ def build_tree_v2(files, parent_id):
                 row.append(f)
 
         return row
-
+    print('building tree finished')
     tree = get_row(parent_id)
     return tree

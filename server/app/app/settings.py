@@ -34,6 +34,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = True
 AUTH_USER_MODEL = "auth_app.User"
 ALLOWED_HOSTS = []
+CLIENT_URL = os.environ.get("CLIENT_URL")
 
 
 # Application definition

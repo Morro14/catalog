@@ -89,7 +89,7 @@ class GoogleLoginView(views.APIView):
         user.save()
         temp_token = CustomJWT(content={"id": str(user.id)}, expires_in=60).get_token()
         response = HttpResponseRedirect(
-            f"http://localhost:5173/oauth-success?token={temp_token}",
+            f"{settings.CLIENT_URL}oauth-success?token={temp_token}",
         )
         return response
 
