@@ -31,7 +31,7 @@ class GoogleDriveFiles(views.APIView):
         service = get_driver_service(user)
         root = service.files().get(fileId="root").execute()
         files = get_files(service)
-        tree = build_tree_v2(files=files, parent_id=root["id"])
+        tree = build_tree_v2(files, root["id"])
         print("tree sending response")
         return Response({"files": tree})
         # except Exception as e:

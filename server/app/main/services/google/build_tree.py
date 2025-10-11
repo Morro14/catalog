@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 def get_files(service):
     """Get files with use of provided service."""
     files = []
@@ -26,37 +29,43 @@ def get_files(service):
 
 tree = []
 
-
-def build_tree_v2(files, parent_id):
+import time
+def build_tree_v2(files, root_id):
     """Recursevly builds a file tree structure."""
     print('building tree')
+    root_children = []
+    children_map = defaultdict(list)
+    for f in files:
+        parents = f.get('parents')
 
-    def sort_files(row):
-        folders = []
-        for i, f in enumerate(row):
-            if f["mimeType"] == "application/vnd.google-apps.folder":
-                folder = row.pop(i)
-                folders.append(folder)
-        folders.sort(key=lambda f: f["name"])
-        row.sort(key=lambda f: f["name"])
-        return folders + row
+        if not parents:
+            f["parents"] = [root_id]
+            children_map[root_id].append(f)
+        else:
+            for p in parents:
+                children_map[p].append(f)
 
-    files_sorted = sort_files(files)
+    children_map[root_id].extend(root_children)
 
-    def get_row(parent_id):
-        row = []
+    for key, children in children_map.items():
+        children.sort(key=lambda x: (x['mimeType'] !="application/vnd.google-apps.folder", x['name'].lower()))
+    def add_children(node_id):
+        if node_id in children_map:
+            children = children_map[node_id]
+            
+            for child in children:
+                
+                if child.get("mimeType") == "application/vnd.google-apps.folder":
+                    child["children"] = add_children(child["id"])
 
-        for f in files_sorted:
-            parents = f.get("parents")
-            if not parents:
-                row.append(f)
-                continue
-            if parent_id in parents:
-                if f.get("mimeType") == "application/vnd.google-apps.folder":
-                    f["children"] = get_row(f["id"])
-                row.append(f)
+            return children
+        return []
 
-        return row
+    
+    start_time = time.perf_counter()
+    tree = add_children(root_id)
     print('building tree finished')
-    tree = get_row(parent_id)
+    end_time = time.perf_counter()
+    exec_time = end_time - start_time
+    print('building time:',exec_time)
     return tree
